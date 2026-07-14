@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Киберугрозы — глоссарий</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#111933;
+      --panel-2:#16213f;
+      --text:#e8eefc;
+      --muted:#a8b3d6;
+      --accent:#6ea8fe;
+      --accent-2:#7ee0c3;
+      --danger:#ff7b7b;
+      --border:rgba(255,255,255,.10);
+      --shadow:0 12px 30px rgba(0,0,0,.25);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #17254f 0, #0b1020 45%, #060913 100%);
+      background-attachment: fixed;
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1200px, 92vw); margin:0 auto}
+
+    /* ── NAV ── */
+    .nav{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(14px);
+      background: rgba(6,9,19,.72);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-inner{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px; padding:14px 0;
+    }
+    .brand{font-weight:800; letter-spacing:.3px; font-size:1.05rem; display:flex; align-items:center; gap:8px}
+    .brand-icon{font-size:1.3rem}
+    .nav-links{display:flex; gap:10px; flex-wrap:wrap}
+    .nav-links button{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 18px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.2s;
+      font-size:.93rem;
+    }
+    .nav-links button:hover{background:rgba(110,168,254,.12); border-color:rgba(110,168,254,.35)}
+    .nav-links button.active{
+      background:rgba(110,168,254,.22);
+      border-color:rgba(110,168,254,.55);
+      color:#fff;
+    }
+
+    /* ── PAGES ── */
+    .page{display:none; padding:28px 0 60px; animation:fadeIn .25s ease}
+    .page.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* ── CARDS ── */
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .card.pad{padding:24px}
+
+    /* ── TYPOGRAPHY ── */
+    h1,h2,h3,p{margin-top:0}
+    h1{font-size:clamp(28px, 4vw, 52px); line-height:1.05; margin-bottom:14px}
+    h2{font-size:clamp(20px, 2.8vw, 30px); margin-bottom:14px}
+    h3{font-size:1.05rem; margin-bottom:8px}
+    .lead{color:var(--muted); font-size:1.03rem; line-height:1.7; margin-bottom:0}
+    .tag{
+      display:inline-block;
+      padding:3px 10px;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:600;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
+    .tag-danger{background:rgba(255,123,123,.15); color:var(--danger); border:1px solid rgba(255,123,123,.25)}
+    .tag-accent{background:rgba(110,168,254,.15); color:var(--accent); border:1px solid rgba(110,168,254,.25)}
+    .tag-green{background:rgba(126,224,195,.15); color:var(--accent-2); border:1px solid rgba(126,224,195,.25)}
+    .tag-purple{background:rgba(180,130,255,.15); color:#c49fff; border:1px solid rgba(180,130,255,.25)}
+    .tag-orange{background:rgba(255,185,90,.15); color:#ffb95a; border:1px solid rgba(255,185,90,.25)}
+
+    /* ── HOME HERO ── */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.3fr .9fr;
+      gap:20px;
+      align-items:stretch;
+      margin-top:10px;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+      margin-top:20px;
+    }
+    .stat{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      transition:.2s;
+    }
+    .stat:hover{background:rgba(255,255,255,.07)}
+    .stat .num{font-size:1.8rem; font-weight:800; color:var(--accent-2)}
+    .stat .label{color:var(--muted); font-size:.9rem; margin-top:4px; line-height:1.4}
+
+    /* ── CHARTS ── */
+    .section{margin-top:24px}
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+    .chart-wrap{padding:20px}
+    .chart-wrap h2{font-size:1.1rem; margin-bottom:16px; color:var(--muted)}
+    canvas{width:100% !important; height:280px !important; display:block}
+
+    /* ── THREATS LIST ── */
+    .threat-list{display:flex; flex-direction:column; gap:10px}
+    .threat-item{
+      display:flex; align-items:center; gap:14px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px 18px;
+      transition:.2s;
+    }
+    .threat-item:hover{background:rgba(255,255,255,.07)}
+    .threat-rank{
+      font-weight:800; font-size:1.1rem;
+      color:var(--accent);
+      width:28px; flex-shrink:0; text-align:center;
+    }
+    .threat-info{flex:1}
+    .threat-info strong{display:block; margin-bottom:3px}
+    .threat-info span{font-size:.88rem; color:var(--muted)}
+    .threat-bar-wrap{width:90px; flex-shrink:0}
+    .threat-bar{height:6px; border-radius:999px; background:rgba(255,255,255,.1)}
+    .threat-bar-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+
+    /* ── TOOLBAR ── */
+    .toolbar{
+      display:grid;
+      grid-template-columns: 1.4fr .9fr .9fr;
+      gap:12px;
+      margin:20px 0;
+    }
+    input, select{
+      width:100%;
+      padding:13px 16px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      outline:none;
+      font-size:.95rem;
+      transition:border-color .2s;
+    }
+    input:focus, select:focus{border-color:rgba(110,168,254,.5)}
+    input::placeholder{color:#8c9cc0}
+    option{background:#111933; color:var(--text)}
+
+    /* ── ALPHABET ── */
+    .alphabet{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin:6px 0 20px;
+    }
+    .alphabet button{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:7px 11px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:.88rem;
+      transition:.15s;
+      min-width:36px;
+      text-align:center;
+    }
+    .alphabet button:hover{background:rgba(255,255,255,.09)}
+    .alphabet button.active{
+      background:rgba(126,224,195,.18);
+      border-color:rgba(126,224,195,.45);
+      color:var(--accent-2);
+    }
+
+    /* ── GLOSSARY GRID ── */
+    .glossary-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+    .term{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:20px;
+      transition:.2s;
+      cursor:default;
+    }
+    .term:hover{
+      background:rgba(255,255,255,.07);
+      border-color:rgba(110,168,254,.3);
+      transform:translateY(-2px);
+    }
+    .term-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px}
+    .term h3{font-size:1.05rem; margin:0; line-height:1.3}
+    .term-en{font-size:.82rem; color:var(--muted); margin-bottom:8px; font-style:italic}
+    .term p{font-size:.92rem; color:var(--muted); line-height:1.65; margin:0}
+    .term-example{
+      margin-top:10px;
+      padding:10px 14px;
+      background:rgba(255,255,255,.03);
+      border-left:3px solid var(--accent);
+      border-radius:0 10px 10px 0;
+      font-size:.85rem;
+      color:var(--muted);
+      line-height:1.55;
+    }
+    .no-results{
+      grid-column:1/-1;
+      text-align:center;
+      padding:60px 0;
+      color:var(--muted);
+    }
+    .no-results .icon{font-size:2.5rem; display:block; margin-bottom:12px}
+
+    /* ── TERM EXPAND ── */
+    .term{cursor:pointer;}
+    .term-toggle{
+      display:flex; align-items:center; gap:6px;
+      margin-top:12px; padding-top:10px;
+      border-top:1px solid rgba(255,255,255,.06);
+      font-size:.82rem; color:var(--accent);
+      user-select:none; transition:color .2s;
+    }
+    .term:hover .term-toggle{color:#92bfff;}
+    .term-toggle-icon{
+      display:inline-flex; transition:transform .28s ease; flex-shrink:0;
+    }
+    .term.open .term-toggle-icon{transform:rotate(180deg);}
+    .term-details{
+      max-height:0; overflow:hidden;
+      transition:max-height .38s ease, opacity .28s ease;
+      opacity:0;
+    }
+    .term.open .term-details{max-height:700px; opacity:1;}
+    .term-detail-list{
+      list-style:none; padding:0; margin:12px 0 2px;
+      display:flex; flex-direction:column; gap:9px;
+    }
+    .term-detail-list li{
+      display:flex; gap:10px; align-items:flex-start;
+      font-size:.87rem; line-height:1.62;
+      padding:8px 12px; border-radius:10px;
+    }
+    .term-detail-list li.cause{
+      background:rgba(255,185,90,.07);
+      border:1px solid rgba(255,185,90,.14);
+    }
+    .term-detail-list li.tip{
+      background:rgba(126,224,195,.07);
+      border:1px solid rgba(126,224,195,.14);
+    }
+    .term-detail-list li .di{flex-shrink:0; font-size:1rem; line-height:1.62;}
+    .term-detail-list li.cause .dt{color:#d4c4a0;}
+    .term-detail-list li.tip .dt{color:#b8e8d8;}
+
+    /* ── GLOSSARY COUNT ── */
+    .glossary-meta{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:6px;
+      font-size:.9rem; color:var(--muted);
+    }
+
+    /* ── ABOUT ── */
+    .about-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px}
+    .about-block{padding:24px; border-radius:var(--radius)}
+    .feature-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px}
+    .feature-list li{
+      display:flex; gap:12px; align-items:flex-start;
+      font-size:.95rem; color:var(--muted); line-height:1.6;
+    }
+    .feature-list li .icon{font-size:1.2rem; flex-shrink:0; margin-top:1px}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:820px){
+      .hero{grid-template-columns:1fr}
+      .grid-2{grid-template-columns:1fr}
+      .glossary-grid{grid-template-columns:1fr}
+      .toolbar{grid-template-columns:1fr}
+      .about-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:520px){
+      .stats{grid-template-columns:1fr 1fr}
+      .nav-inner{flex-wrap:wrap; gap:10px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════ NAV ════════════════ -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="brand">
+        <span class="brand-icon">🛡️</span>
+        <span>КиберГлоссарий</span>
+      </div>
+      <div class="nav-links">
+        <button class="active" onclick="showPage('home',this)">Главная</button>
+        <button onclick="showPage('glossary',this)">Глоссарий</button>
+        <button onclick="showPage('threats',this)">Топ угроз</button>
+        <button onclick="showPage('about',this)">О сайте</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════ PAGE: HOME ════════════════ -->
+<div id="page-home" class="page active">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="card pad">
+        <h1>Кибербезопасность:<br><span style="color:var(--accent)">знай угрозу</span><br>в лицо</h1>
+        <p class="lead">Интерактивный глоссарий по кибербезопасности — термины, атаки, защита. Разбираемся в мире цифровых угроз простым языком.</p>
+        <p style="font-size:.9rem;color:var(--muted);line-height:1.65;margin-top:10px;padding:12px 16px;background:rgba(110,168,254,.07);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;">
+          <strong style="color:var(--text)">Почему это важно сейчас.</strong> По итогам 2025 года число кибератак на российские организации выросло на 25%, а в первом полугодии 2026-го темп не снижается: ежедневно фиксируется свыше 700 значимых инцидентов. Угрозы становятся точнее и автоматизированнее — понимание терминологии сегодня это не опция, а базовая грамотность.
+        </p>
+        <div class="stats">
+          <div class="stat"><div class="num">83</div><div class="label">термина в глоссарии</div></div>
+          <div class="stat"><div class="num">8</div><div class="label">категорий угроз</div></div>
+          <div class="stat"><div class="num">₽ 3.4 трлн</div><div class="label">ущерб от кибератак в 2024</div></div>
+          <div class="stat"><div class="num">+38%</div><div class="label">рост атак год к году</div></div>
+        </div>
+      </div>
+      <div class="card pad" style="display:flex;flex-direction:column;justify-content:center;gap:10px">
+        <h2 style="font-size:1.1rem;color:var(--muted);margin-bottom:0">Распределение угроз по типам</h2>
+        <div style="position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:1/1">
+          <canvas id="chartDoughnut"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="section grid-2">
+      <div class="card chart-wrap">
+        <h2>Число инцидентов по годам</h2>
+        <canvas id="chartBar"></canvas>
+      </div>
+      <div class="card chart-wrap">
+        <h2>Топ векторов атак</h2>
+        <canvas id="chartRadar"></canvas>
+      </div>
+    </div>
+
+    <!-- Fighting cybercrime block -->
+    <div class="section">
+      <div class="card pad" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start">
+        <div>
+          <h2 style="font-size:1.3rem;margin-bottom:12px">⚔️ Борьба с киберпреступностью</h2>
+          <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:14px">
+            Государства и бизнес активно наращивают ресурсы для противодействия цифровым угрозам. В России действуют специализированные подразделения МВД по киберпреступлениям, ФСТЭК осуществляет контроль информационной безопасности критической инфраструктуры, а ФСБ координирует реагирование на инциденты государственного масштаба.
+          </p>
+          <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin:0">
+            На международном уровне страны сотрудничают через Интерпол и Европол: совместные операции позволяют ликвидировать ботнеты, арестовывать операторов ransomware-группировок и перехватывать инфраструктуру злоумышленников. В 2024–2025 годах были обезврежены группировки LockBit, BlackCat и ряд других крупных APT-кластеров.
+          </p>
+        </div>
+        <div>
+          <h2 style="font-size:1.3rem;margin-bottom:12px">🌐 Актуальность глоссария</h2>
+          <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:14px">
+            Язык кибербезопасности быстро меняется: новые техники атак порождают новые термины, а старые понятия приобретают новые смыслы. Незнание базовой терминологии — реальный риск: именно на этом строятся атаки социальной инженерии, когда жертва не распознаёт угрозу из-за отсутствия контекста.
+          </p>
+          <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin:0">
+            Данный глоссарий охватывает актуальный срез терминов по состоянию на середину 2026 года и регулярно пополняется. Он одинаково полезен для студентов ИБ-специальностей, системных администраторов и руководителей, которым важно понимать, о чём говорят их специалисты по безопасности.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick-access terms -->
+    <div class="section">
+      <h2 style="margin-bottom:16px">Популярные термины</h2>
+      <div id="home-terms" class="glossary-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════ PAGE: GLOSSARY ════════════════ -->
+<div id="page-glossary" class="page">
+  <div class="container">
+    <h2>Глоссарий терминов</h2>
+    <p class="lead" style="margin-bottom:0">Поиск по названию, фильтрация по категории и первой букве.</p>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="🔍  Поиск термина…" oninput="renderGlossary()">
+      <select id="catFilter" onchange="renderGlossary()">
+        <option value="">Все категории</option>
+        <option value="Атаки">Атаки</option>
+        <option value="Вредоносное ПО">Вредоносное ПО</option>
+        <option value="Защита">Защита</option>
+        <option value="Протоколы">Протоколы</option>
+        <option value="Социальная инженерия">Социальная инженерия</option>
+        <option value="Уязвимости">Уязвимости</option>
+        <option value="Криптография">Криптография</option>
+        <option value="Разведка">Разведка</option>
+      </select>
+      <select id="sortFilter" onchange="renderGlossary()">
+        <option value="az">А → Я</option>
+        <option value="za">Я → А</option>
+        <option value="cat">По категории</option>
+      </select>
+    </div>
+
+    <div class="alphabet" id="alphabetRow"></div>
+
+    <div class="glossary-meta">
+      <span id="glossaryCount"></span>
+      <button onclick="resetFilters()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.88rem;padding:0">Сбросить фильтры</button>
+    </div>
+
+    <div id="glossary-grid" class="glossary-grid"></div>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE: THREATS ════════════════ -->
+<div id="page-threats" class="page">
+  <div class="container">
+    <h2>Топ кибератак и угроз</h2>
+    <p class="lead">Рейтинг актуальных киберугроз по данным первого полугодия 2026 года — на основе отчётов Positive Technologies, Kaspersky, BI.ZONE и MITRE ATT&CK.</p>
+
+    <div class="section grid-2">
+      <div>
+        <div class="threat-list" id="threatList"></div>
+      </div>
+      <div class="card chart-wrap" style="height:fit-content">
+        <h2>Доля угроз в 2026 году</h2>
+        <canvas id="chartThreats"></canvas>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 style="margin-bottom:16px">Советы по защите</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px" id="tipsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ PAGE: ABOUT ════════════════ -->
+<div id="page-about" class="page">
+  <div class="container">
+    <h2>О сайте</h2>
+    <p class="lead">КиберГлоссарий — образовательный ресурс о кибербезопасности на русском языке. Помогает разобраться в понятиях, атаках и методах защиты.</p>
+
+    <div class="about-grid">
+      <div class="card pad">
+        <h3 style="color:var(--accent);margin-bottom:16px">Что внутри</h3>
+        <ul class="feature-list">
+          <li><span class="icon">📖</span><span>83 термина по кибербезопасности с объяснениями и примерами</span></li>
+          <li><span class="icon">🔍</span><span>Поиск и фильтрация по категориям и алфавиту</span></li>
+          <li><span class="icon">📊</span><span>Интерактивные графики и рейтинг угроз</span></li>
+          <li><span class="icon">🛡️</span><span>Практические советы по защите</span></li>
+          <li><span class="icon">🌐</span><span>Работает полностью в браузере без сервера</span></li>
+        </ul>
+      </div>
+      <div class="card pad">
+        <h3 style="color:var(--accent-2);margin-bottom:16px">Категории</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="tag tag-danger">Атаки</span>
+          <span class="tag tag-accent">Протоколы</span>
+          <span class="tag tag-green">Защита</span>
+          <span class="tag tag-purple">Криптография</span>
+          <span class="tag tag-orange">Социальная инженерия</span>
+          <span class="tag tag-danger">Вредоносное ПО</span>
+          <span class="tag tag-accent">Уязвимости</span>
+          <span class="tag tag-green">Разведка</span>
+        </div>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+          <h3 style="color:var(--accent-2);margin-bottom:12px">Источники данных</h3>
+          <ul class="feature-list">
+            <li><span class="icon">📌</span><span>Отчёты Positive Technologies, Kaspersky, BI.ZONE</span></li>
+            <li><span class="icon">📌</span><span>CVE/MITRE ATT&CK Framework</span></li>
+            <li><span class="icon">📌</span><span>NIST Cybersecurity Framework</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section card pad" style="margin-top:20px">
+      <h3 style="margin-bottom:18px">Быстрая статистика</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div class="stat"><div class="num" style="color:var(--accent)">80+</div><div class="label">терминов</div></div>
+        <div class="stat"><div class="num" style="color:var(--accent-2)">8</div><div class="label">категорий</div></div>
+        <div class="stat"><div class="num" style="color:#c49fff">10</div><div class="label">топ-угроз</div></div>
+        <div class="stat"><div class="num" style="color:#ffb95a">12</div><div class="label">советов по защите</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+const GLOSSARY = [
+  // Атаки
+  {name:"DDoS-атака",en:"Distributed Denial of Service",cat:"Атаки",desc:"Распределённая атака с целью перегрузки сервера или сети, делая ресурс недоступным для легитимных пользователей. Использует тысячи заражённых устройств (ботнет).",example:"В 2016 году атака на Dyn DNS вывела из строя Twitter, Netflix и Reddit на несколько часов."},
+  {name:"Брутфорс",en:"Brute Force",cat:"Атаки",desc:"Метод взлома путём перебора всех возможных комбинаций паролей или ключей шифрования до нахождения верного.",example:"Автоматический подбор PIN-кода из 4 цифр займёт не более 10 000 попыток."},
+  {name:"SQL-инъекция",en:"SQL Injection",cat:"Атаки",desc:"Внедрение вредоносного SQL-кода в запросы к базе данных через пользовательский ввод, что позволяет читать, изменять или удалять данные.",example:"Поле логина: admin'--  обходит проверку пароля в уязвимом приложении."},
+  {name:"XSS",en:"Cross-Site Scripting",cat:"Атаки",desc:"Внедрение вредоносного JavaScript-кода на веб-страницу, который выполняется в браузере другого пользователя.",example:"Через XSS в комментариях злоумышленник крадёт куки сессии всех посетителей."},
+  {name:"MITM-атака",en:"Man-in-the-Middle",cat:"Атаки",desc:"Перехват и возможная подмена коммуникации между двумя сторонами без их ведома.",example:"Подключение к публичному Wi-Fi без VPN делает вас уязвимым для MITM."},
+  {name:"Атака на цепочку поставок",en:"Supply Chain Attack",cat:"Атаки",desc:"Компрометация программного обеспечения или оборудования на этапе производства или обновления у доверенного поставщика.",example:"SolarWinds (2020): вредоносный код попал в обновление ПО, использованного тысячами компаний."},
+  {name:"Атака нулевого дня",en:"Zero-Day Attack",cat:"Атаки",desc:"Эксплуатация уязвимости в ПО до выхода официального патча. Разработчик ещё не знает о проблеме или не успел её исправить.",example:"Уязвимость Log4Shell (CVE-2021-44228) эксплуатировалась ещё до выхода патча."},
+  {name:"Перехват сеанса",en:"Session Hijacking",cat:"Атаки",desc:"Кража или подделка идентификатора сессии пользователя для получения несанкционированного доступа к его аккаунту.",example:"Злоумышленник перехватывает cookie сессии через незащищённую сеть."},
+  {name:"Clickjacking",en:"Clickjacking",cat:"Атаки",desc:"Техника обмана пользователя, при которой невидимый iframe размещается поверх легитимного элемента, заставляя кликать не туда.",example:"Кнопка «Воспроизвести» на видео оказывается скрытой кнопкой «Подтвердить платёж»."},
+  {name:"Атака повторного воспроизведения",en:"Replay Attack",cat:"Атаки",desc:"Перехват и повторная отправка ранее авторизованных данных (токенов, запросов) для получения несанкционированного доступа.",example:"Повторная отправка перехваченного запроса на банковский перевод."},
+
+  // Вредоносное ПО
+  {name:"Вирус",en:"Virus",cat:"Вредоносное ПО",desc:"Программа, способная копировать себя и внедряться в другие файлы или программы, нанося вред системе при исполнении.",example:"Вирус ILOVEYOU (2000) распространился по электронной почте и уничтожил файлы у 45 млн пользователей."},
+  {name:"Троян",en:"Trojan Horse",cat:"Вредоносное ПО",desc:"Вредоносная программа, маскирующаяся под легитимное ПО. В отличие от вируса, не размножается, но открывает доступ злоумышленнику.",example:"Trojan.Android.Banker крадёт данные банковских приложений под видом игры."},
+  {name:"Червь",en:"Worm",cat:"Вредоносное ПО",desc:"Самовоспроизводящаяся вредоносная программа, распространяющаяся по сети без участия пользователя, эксплуатируя уязвимости.",example:"WannaCry (2017) за несколько часов заразил более 200 000 компьютеров в 150 странах."},
+  {name:"Вымогатель",en:"Ransomware",cat:"Вредоносное ПО",desc:"Шифрует файлы жертвы и требует выкуп (обычно в криптовалюте) за ключ дешифрования.",example:"Ryuk — ransomware, атаковавший больницы и требовавший от $100 000 до нескольких миллионов."},
+  {name:"Шпионское ПО",en:"Spyware",cat:"Вредоносное ПО",desc:"Программа, тайно собирающая информацию о пользователе: нажатия клавиш, посещённые сайты, учётные данные.",example:"Keylogger фиксирует все нажатия клавиш и отправляет их на сервер злоумышленника."},
+  {name:"Ботнет",en:"Botnet",cat:"Вредоносное ПО",desc:"Сеть заражённых устройств (ботов), управляемых злоумышленником для проведения атак, рассылки спама или майнинга.",example:"Ботнет Mirai использовал IoT-устройства для крупнейшей DDoS-атаки в истории."},
+  {name:"Руткит",en:"Rootkit",cat:"Вредоносное ПО",desc:"Набор инструментов для скрытия присутствия злоумышленника в системе, часто работающий на уровне ядра ОС.",example:"Руткит скрывает вредоносные процессы от антивируса, изменяя системные вызовы."},
+  {name:"Рекламное ПО",en:"Adware",cat:"Вредоносное ПО",desc:"Программа, принудительно демонстрирующая рекламу. Часть видов собирает данные о пользователе и продаёт их.",example:"Adware подменяет домашнюю страницу браузера и показывает всплывающую рекламу."},
+  {name:"Буткит",en:"Bootkit",cat:"Вредоносное ПО",desc:"Разновидность руткита, заражающая загрузчик ОС (MBR/VBR). Активируется до запуска операционной системы, обходя защиту.",example:"Rootkit Necurs заражал MBR и оставался активным даже после переустановки Windows."},
+  {name:"Бэкдор",en:"Backdoor",cat:"Вредоносное ПО",desc:"Скрытый механизм, обеспечивающий обход стандартной аутентификации и удалённый доступ к системе.",example:"Бэкдор в роутере позволяет производителю или злоумышленнику получить доступ к сети без пароля."},
+
+  // Социальная инженерия
+  {name:"Фишинг",en:"Phishing",cat:"Социальная инженерия",desc:"Мошеннические письма, сайты или сообщения, имитирующие доверенные источники для кражи учётных данных и личной информации.",example:"Письмо «от Сбербанка» с просьбой срочно подтвердить данные карты."},
+  {name:"Спир-фишинг",en:"Spear Phishing",cat:"Социальная инженерия",desc:"Целевой фишинг с персонализацией: атакующий изучает жертву и отправляет письмо от имени знакомого человека или коллеги.",example:"Письмо «от директора» бухгалтеру с просьбой срочно перевести деньги."},
+  {name:"Вишинг",en:"Vishing",cat:"Социальная инженерия",desc:"Голосовой фишинг — телефонное мошенничество, при котором злоумышленник представляется сотрудником банка, службы безопасности и пр.",example:"Звонок от «службы безопасности» банка с просьбой назвать CVV карты."},
+  {name:"Смишинг",en:"Smishing",cat:"Социальная инженерия",desc:"Фишинг через SMS-сообщения с вредоносными ссылками или призывом позвонить на мошеннический номер.",example:"«Ваша посылка задержана, перейдите по ссылке для подтверждения адреса» — типичный смишинг."},
+  {name:"Претекстинг",en:"Pretexting",cat:"Социальная инженерия",desc:"Создание вымышленного сценария (легенды) для манипуляции жертвой и получения конфиденциальной информации.",example:"Звонящий представляется IT-специалистом и просит сообщить пароль для «технических работ»."},
+  {name:"Кво Про Кво",en:"Quid Pro Quo",cat:"Социальная инженерия",desc:"Предложение услуги или выгоды в обмен на информацию. Злоумышленник предлагает «помощь», получая взамен доступ или данные.",example:"«IT-специалист» предлагает исправить проблему с компьютером, запрашивая удалённый доступ."},
+
+  // Защита
+  {name:"Брандмауэр",en:"Firewall",cat:"Защита",desc:"Система сетевой безопасности, контролирующая входящий и исходящий трафик на основе заданных правил.",example:"Корпоративный firewall блокирует все входящие соединения на порты, кроме 80 и 443."},
+  {name:"VPN",en:"Virtual Private Network",cat:"Защита",desc:"Технология создания зашифрованного туннеля между устройством и сервером, скрывающая трафик и IP-адрес пользователя.",example:"Использование VPN в публичном Wi-Fi защищает от MITM-атак."},
+  {name:"IDS/IPS",en:"Intrusion Detection/Prevention System",cat:"Защита",desc:"Системы обнаружения (IDS) и предотвращения (IPS) вторжений — анализируют трафик на предмет подозрительных паттернов.",example:"IPS автоматически блокирует IP-адрес после 10 неудачных попыток входа."},
+  {name:"Двухфакторная аутентификация",en:"Two-Factor Authentication (2FA)",cat:"Защита",desc:"Дополнительный уровень защиты: помимо пароля требуется второй фактор — OTP-код, биометрия или физический ключ.",example:"Вход в Google: пароль + код из приложения Google Authenticator."},
+  {name:"SIEM",en:"Security Information and Event Management",cat:"Защита",desc:"Платформа для сбора, анализа и корреляции событий безопасности из различных источников в реальном времени.",example:"SIEM обнаруживает аномальное число запросов к БД в 3 часа ночи и поднимает инцидент."},
+  {name:"Принцип наименьших привилегий",en:"Least Privilege Principle",cat:"Защита",desc:"Пользователям и процессам предоставляются только те права, которые необходимы для выполнения конкретной задачи.",example:"Рядовой сотрудник не имеет прав администратора — только доступ к своим рабочим папкам."},
+  {name:"Сегментация сети",en:"Network Segmentation",cat:"Защита",desc:"Разделение сети на изолированные сегменты для ограничения распространения атак и контроля трафика.",example:"Финансовый отдел в отдельном VLAN — заражение ПК в другом отделе не затронет бухгалтерию."},
+  {name:"Патч-менеджмент",en:"Patch Management",cat:"Защита",desc:"Процесс регулярного обновления ПО для устранения известных уязвимостей и снижения риска эксплуатации.",example:"WannaCry был остановлен патчем MS17-010, выпущенным за 2 месяца до атаки — но многие не обновились."},
+  {name:"Zero Trust",en:"Zero Trust Security",cat:"Защита",desc:"Модель безопасности «никому не доверяй, всё проверяй»: каждый запрос требует явной верификации независимо от местоположения.",example:"Даже сотрудник внутри корпоративной сети должен проходить аутентификацию при обращении к ресурсам."},
+  {name:"Резервное копирование",en:"Backup",cat:"Защита",desc:"Создание копий данных для восстановления после инцидента. Правило 3-2-1: 3 копии, 2 разных носителя, 1 вне офиса.",example:"Изолированная резервная копия помогла больнице восстановиться после атаки ransomware за несколько часов."},
+  {name:"Penetration Testing",en:"Penetration Testing",cat:"Защита",desc:"Санкционированное тестирование системы на проникновение: эмуляция реальной атаки для выявления слабых мест до злоумышленников.",example:"Пентестер находит незакрытый порт SSH с паролем по умолчанию раньше хакера."},
+  {name:"WAF",en:"Web Application Firewall",cat:"Защита",desc:"Межсетевой экран для веб-приложений, фильтрующий HTTP-трафик и защищающий от XSS, SQL-инъекций и других веб-атак.",example:"Cloudflare WAF блокирует запросы с сигнатурами SQL-инъекций до достижения сервера."},
+
+  // Протоколы
+  {name:"HTTPS",en:"HyperText Transfer Protocol Secure",cat:"Протоколы",desc:"Защищённая версия HTTP с использованием TLS-шифрования. Обеспечивает конфиденциальность и целостность передаваемых данных.",example:"Замок в адресной строке браузера означает, что соединение зашифровано по HTTPS."},
+  {name:"TLS/SSL",en:"Transport Layer Security / Secure Sockets Layer",cat:"Протоколы",desc:"Криптографические протоколы для защиты передачи данных в сети. SSL устарел, TLS 1.3 — актуальный стандарт.",example:"TLS шифрует данные карты при онлайн-оплате так, чтобы банк мог их прочитать, а перехватчик — нет."},
+  {name:"SSH",en:"Secure Shell",cat:"Протоколы",desc:"Протокол для безопасного удалённого управления серверами и передачи файлов через зашифрованный канал.",example:"Системный администратор подключается к серверу в датацентре: ssh admin@192.168.1.10"},
+  {name:"OAuth 2.0",en:"Open Authorization 2.0",cat:"Протоколы",desc:"Протокол делегированного доступа, позволяющий приложению действовать от имени пользователя без передачи пароля.",example:"«Войти через Google» — приложение получает токен доступа, но не узнаёт ваш пароль Google."},
+  {name:"DNS",en:"Domain Name System",cat:"Протоколы",desc:"Система доменных имён, переводящая человекочитаемые адреса (google.com) в IP-адреса. Часто используется в атаках.",example:"DNS-спуфинг: злоумышленник подменяет запись bank.ru, перенаправляя на фишинговый сайт."},
+  {name:"DNSSEC",en:"DNS Security Extensions",cat:"Протоколы",desc:"Расширение DNS с цифровой подписью ответов, защищающее от подмены DNS-записей.",example:"DNSSEC позволяет браузеру проверить, что ответ DNS для bank.ru не был подделан."},
+
+  // Уязвимости
+  {name:"Переполнение буфера",en:"Buffer Overflow",cat:"Уязвимости",desc:"Запись данных за пределы выделенного буфера памяти. Может привести к перезаписи смежных областей памяти и выполнению произвольного кода.",example:"Heartbleed (CVE-2014-0160) — переполнение буфера в OpenSSL, раскрывавшее содержимое памяти сервера."},
+  {name:"CVE",en:"Common Vulnerabilities and Exposures",cat:"Уязвимости",desc:"Международная база данных публично известных уязвимостей ПО с уникальными идентификаторами вида CVE-YYYY-NNNNN.",example:"CVE-2021-44228 — критическая уязвимость Log4Shell в библиотеке Log4j (CVSS 10.0)."},
+  {name:"CVSS",en:"Common Vulnerability Scoring System",cat:"Уязвимости",desc:"Стандартизированная система оценки критичности уязвимостей от 0 до 10. Score ≥ 9.0 — критическая уязвимость.",example:"Уязвимость с CVSS 9.8 требует немедленного патча; с 3.2 — в плановом порядке."},
+  {name:"Race Condition",en:"Race Condition",cat:"Уязвимости",desc:"Ситуация, при которой поведение программы зависит от порядка выполнения потоков. Эксплуатация может приводить к несанкционированным действиям.",example:"Два запроса на снятие денег одновременно проходят проверку баланса и оба успешно выполняются."},
+  {name:"Path Traversal",en:"Path Traversal",cat:"Уязвимости",desc:"Выход за пределы дозволенного каталога файловой системы с помощью последовательности ../.",example:"Запрос /download?file=../../etc/passwd раскрывает системные файлы Linux-сервера."},
+  {name:"SSRF",en:"Server-Side Request Forgery",cat:"Уязвимости",desc:"Уязвимость, при которой злоумышленник заставляет сервер делать запросы к внутренним ресурсам сети от своего имени.",example:"Атакующий заставляет сервер запросить http://169.254.169.254 и получить метаданные облачного инстанса AWS."},
+  {name:"IDOR",en:"Insecure Direct Object Reference",cat:"Уязвимости",desc:"Уязвимость контроля доступа: приложение использует идентификаторы объектов без проверки прав пользователя.",example:"Замена /invoice/1001 на /invoice/1002 в URL открывает чужой счёт."},
+  {name:"Десериализация",en:"Insecure Deserialization",cat:"Уязвимости",desc:"Небезопасная обработка сериализованных данных, позволяющая злоумышленнику выполнить произвольный код на сервере.",example:"Java-приложение десериализует данные из cookie без проверки — злоумышленник выполняет OS-команды."},
+
+  // Криптография
+  {name:"Шифрование",en:"Encryption",cat:"Криптография",desc:"Преобразование данных в нечитаемый вид с помощью алгоритма и ключа. Симметричное (один ключ) и асимметричное (пара ключей).",example:"AES-256 — стандарт симметричного шифрования, используемый в WhatsApp и Signal."},
+  {name:"Хеш-функция",en:"Hash Function",cat:"Криптография",desc:"Функция, преобразующая данные произвольной длины в строку фиксированной длины (хеш). Изменение данных полностью меняет хеш.",example:"SHA-256('hello') = 2cf24... — одинаковый хеш всегда для одинаковых данных."},
+  {name:"Цифровая подпись",en:"Digital Signature",cat:"Криптография",desc:"Криптографический механизм для проверки подлинности и целостности данных с использованием асимметричной криптографии.",example:"Email с цифровой подписью подтверждает, что письмо не было изменено после отправки."},
+  {name:"PKI",en:"Public Key Infrastructure",cat:"Криптография",desc:"Инфраструктура управления цифровыми сертификатами и ключами для обеспечения доверенной коммуникации.",example:"SSL-сертификат для вашего сайта выдаётся удостоверяющим центром (CA) в рамках PKI."},
+  {name:"Соль (Salt)",en:"Cryptographic Salt",cat:"Криптография",desc:"Случайное значение, добавляемое к паролю перед хешированием для защиты от радужных таблиц и атак словарём.",example:"hash(password + salt) — даже одинаковые пароли дают разные хеши благодаря разным солям."},
+  {name:"End-to-End Encryption",en:"End-to-End Encryption (E2EE)",cat:"Криптография",desc:"Шифрование, при котором только отправитель и получатель могут прочитать сообщение. Даже провайдер не имеет доступа.",example:"WhatsApp и Signal используют E2EE — даже компания не может прочитать ваши сообщения."},
+  {name:"Квантовая криптография",en:"Quantum Cryptography",cat:"Криптография",desc:"Использование квантовых свойств для передачи ключей с гарантированной защитой от перехвата (QKD).",example:"Любая попытка перехватить квантовый ключ изменяет квантовое состояние фотонов и обнаруживается."},
+
+  // Атаки (доп.)
+  {name:"Credential Stuffing",en:"Credential Stuffing",cat:"Атаки",desc:"Автоматическая проверка пар логин/пароль из утечек на других сервисах. Работает, потому что люди повторно используют пароли.",example:"База из 500 млн утёкших паролей проверяется на Netflix, Spotify и других сервисах."},
+  {name:"DNS-спуфинг",en:"DNS Spoofing / DNS Cache Poisoning",cat:"Атаки",desc:"Подмена DNS-записей в кэше сервера, перенаправляющая пользователей на вредоносный сайт вместо легитимного.",example:"Запрос bank.ru возвращает IP мошеннического сайта из отравленного кэша DNS-сервера."},
+  {name:"ARP-спуфинг",en:"ARP Spoofing",cat:"Атаки",desc:"Отправка поддельных ARP-пакетов в локальной сети для связи MAC-адреса злоумышленника с IP жертвы. Используется для MITM.",example:"Атакующий в корпоративной сети перехватывает трафик между компьютером бухгалтера и маршрутизатором."},
+  {name:"CSRF",en:"Cross-Site Request Forgery",cat:"Атаки",desc:"Заставляет аутентифицированного пользователя выполнить нежелательное действие на сайте, на котором он авторизован.",example:"Картинка в письме тайно отправляет запрос на перевод денег в интернет-банке, пока пользователь залогинен."},
+  {name:"Атака на основе словаря",en:"Dictionary Attack",cat:"Атаки",desc:"Перебор паролей с использованием заранее составленного списка слов, популярных паролей и их вариаций.",example:"RockYou.txt — список из 14 млн реальных паролей, используемый в атаках по словарю."},
+
+  // Вредоносное ПО (доп.)
+  {name:"Дроппер",en:"Dropper",cat:"Вредоносное ПО",desc:"Программа-загрузчик, единственная цель которой — доставить и установить другое вредоносное ПО, скрывая его от антивирусов.",example:"Дроппер приходит во вложении Word-файла, при открытии скачивает и запускает ransomware."},
+  {name:"Бесфайловое ВПО",en:"Fileless Malware",cat:"Вредоносное ПО",desc:"Вредоносный код, существующий только в оперативной памяти и использующий легитимные инструменты ОС (PowerShell, WMI) без записи на диск.",example:"PowerShell-скрипт в реестре Windows выполняется при каждой загрузке, не оставляя файлов для антивируса."},
+
+  // Социальная инженерия (доп.)
+  {name:"Тейлгейтинг",en:"Tailgating",cat:"Социальная инженерия",desc:"Физическое проникновение в охраняемую зону вслед за авторизованным сотрудником, используя вежливость или торопливость людей.",example:"Человек с коробками в руках просит придержать дверь — охранник пропускает, не проверяя пропуск."},
+  {name:"Байтинг",en:"Baiting",cat:"Социальная инженерия",desc:"Подбрасывание заражённых носителей (флешек, дисков) в доступных местах, рассчитывая на любопытство жертвы.",example:"USB-накопитель с надписью «Зарплата 2024» на парковке офиса — сотрудник подбирает и подключает к рабочему ПК."},
+
+  // Защита (доп.)
+  {name:"EDR",en:"Endpoint Detection and Response",cat:"Защита",desc:"Решение для мониторинга и реагирования на угрозы на конечных устройствах в режиме реального времени с записью всей активности.",example:"EDR фиксирует подозрительный процесс PowerShell, автоматически изолирует ноутбук от сети и уведомляет SOC."},
+  {name:"SOC",en:"Security Operations Center",cat:"Защита",desc:"Центр мониторинга безопасности: команда аналитиков и набор инструментов, круглосуточно отслеживающих угрозы и реагирующих на инциденты.",example:"SOC банка получает alert от SIEM в 2:47 ночи и за 8 минут изолирует заражённый сервер."},
+  {name:"SOAR",en:"Security Orchestration, Automation and Response",cat:"Защита",desc:"Платформа автоматизации реагирования на инциденты: объединяет инструменты безопасности и автоматизирует рутинные задачи аналитиков.",example:"SOAR автоматически блокирует вредоносный IP, открывает тикет в Jira и отправляет уведомление в Slack."},
+  {name:"Honeytoken",en:"Honeytoken",cat:"Защита",desc:"Ложный цифровой актив (учётная запись, файл, API-ключ), обращение к которому сигнализирует о вторжении.",example:"Фиктивный аккаунт admin_backup в AD: любая попытка входа — немедленный алерт безопасности."},
+
+  // Протоколы (доп.)
+  {name:"IPsec",en:"IP Security",cat:"Протоколы",desc:"Набор протоколов для шифрования и аутентификации IP-пакетов. Используется в VPN-решениях корпоративного уровня.",example:"IPsec-туннель между офисами компании шифрует весь трафик на сетевом уровне."},
+  {name:"LDAP",en:"Lightweight Directory Access Protocol",cat:"Протоколы",desc:"Протокол для доступа к службам каталогов (Active Directory). Часто атакуется через LDAP-инъекции.",example:"LDAP-инъекция в поле логина: ввод *)(uid=*))( обходит аутентификацию в уязвимых системах."},
+
+  // Криптография (доп.)
+  {name:"Асимметричное шифрование",en:"Asymmetric Encryption (RSA)",cat:"Криптография",desc:"Шифрование с парой ключей: публичный (для шифрования) и приватный (для расшифровки). Основа PKI, HTTPS и цифровых подписей.",example:"Вы шифруете письмо публичным ключом получателя — расшифровать может только он своим приватным ключом."},
+
+  // Разведка (доп.)
+  {name:"Shodan",en:"Shodan",cat:"Разведка",desc:"Поисковик по интернет-устройствам: индексирует серверы, роутеры, камеры и IoT. Используется как атакующими, так и для аудита.",example:"Поиск в Shodan «default password» находит тысячи роутеров с заводскими паролями, подключённых к интернету."},
+  {name:"Цифровые следы",en:"Digital Footprint",cat:"Разведка",desc:"Совокупность данных, оставляемых пользователем в интернете: активные (соцсети, формы) и пассивные (cookies, IP, метаданные).",example:"По метаданным фото в Instagram можно определить точное местоположение и модель камеры пользователя."},
+
+  // Разведка
+  {name:"OSINT",en:"Open Source Intelligence",cat:"Разведка",desc:"Сбор и анализ информации из открытых источников: соцсети, WHOIS, Shodan, GitHub и пр. Используется как атакующими, так и защитниками.",example:"По профилю в LinkedIn злоумышленник узнаёт ФИО IT-директора и его коллег для spear-phishing."},
+  {name:"Footprinting",en:"Footprinting",cat:"Разведка",desc:"Сбор информации о цели атаки: IP-адреса, домены, технологии, сотрудники. Первый этап любой кибератаки.",example:"Nmap сканирует диапазон IP для поиска открытых портов перед атакой."},
+  {name:"Honeypot",en:"Honeypot",cat:"Разведка",desc:"Ловушка — специально уязвимый ресурс для привлечения и изучения действий злоумышленников.",example:"Honeypot-сервер с «важными» файлами регистрирует все попытки взлома и тактики атакующих."},
+  {name:"Threat Intelligence",en:"Cyber Threat Intelligence",cat:"Разведка",desc:"Сбор, анализ и применение данных об актуальных угрозах, тактиках и инструментах злоумышленников (TTPs).",example:"Threat feed информирует об IP-адресах и хешах файлов активной APT-группы."},
+  {name:"APT",en:"Advanced Persistent Threat",cat:"Разведка",desc:"Целенаправленная длительная атака, часто со стороны государственных структур. Нацелена на конкретную организацию или страну.",example:"Группа APT29 (Cozy Bear) — российская хакерская группа, атаковавшая правительства США и Европы."},
+  {name:"IOC",en:"Indicator of Compromise",cat:"Разведка",desc:"Артефакты, свидетельствующие о состоявшейся атаке: IP, домены, хеши файлов, ключи реестра.",example:"Хеш файла MD5:abc123... совпадает с известным образцом вируса — это IOC."},
+];
+
+const THREATS = [
+  {name:"AI-фишинг и дипфейк-атаки",pct:27,desc:"ИИ генерирует убедительные письма, голос и видео руководителей — вектор №1 в 2026"},
+  {name:"Программы-вымогатели (RaaS)",pct:22,desc:"Ransomware-as-a-Service: группировки сдают инфраструктуру в аренду, рост двойного вымогательства"},
+  {name:"Атаки на облачную инфраструктуру",pct:16,desc:"Мисконфигурации и кража IAM-токенов в AWS, Azure и GCP — новая приоритетная цель"},
+  {name:"Атаки на цепочку поставок ПО",pct:12,desc:"Компрометация open-source пакетов, npm/PyPI и CI/CD-пайплайнов"},
+  {name:"DDoS нового поколения",pct:9,desc:"Гиперобъёмные атаки свыше 5 Тбит/с с применением ботнетов на базе IoT и AI"},
+  {name:"APT и кибершпионаж",pct:7,desc:"Государственные группировки с многомесячным скрытым присутствием в сети"},
+  {name:"Атаки на OT/ICS-системы",pct:5,desc:"Удары по промышленным объектам, энергетике и критической инфраструктуре"},
+  {name:"Дипфейк-мошенничество (BEC)",pct:2,desc:"Подделка голоса и видео топ-менеджеров для санкционирования переводов"},
+];
+
+const TIPS = [
+  {icon:"🔑",title:"Используйте менеджер паролей",text:"Уникальный сложный пароль для каждого сервиса. Не повторяйте пароли нигде."},
+  {icon:"📱",title:"Включите 2FA везде",text:"Даже если пароль утёкнет, второй фактор защитит аккаунт."},
+  {icon:"🔄",title:"Обновляйте ПО вовремя",text:"Большинство атак эксплуатируют известные уязвимости с готовыми патчами."},
+  {icon:"🌐",title:"Используйте VPN в публичных сетях",text:"Кофейни, аэропорты, гостиницы — зоны риска для MITM-атак."},
+  {icon:"💾",title:"Делайте резервные копии",text:"Правило 3-2-1: 3 копии, 2 носителя, 1 вне офиса. Проверяйте восстановление."},
+  {icon:"📧",title:"Проверяйте отправителя письма",text:"Наведите мышь на адрес — реальный домен часто отличается от отображаемого."},
+  {icon:"🔒",title:"Шифруйте конфиденциальные данные",text:"Ноутбук должен иметь шифрование диска — BitLocker или FileVault."},
+  {icon:"👁",title:"Мониторьте свои аккаунты",text:"Haveibeenpwned.com покажет, попадал ли ваш email в утечки."},
+  {icon:"🏛",title:"Применяйте Zero Trust",text:"Не доверяйте автоматически даже внутренней сети — проверяйте каждый запрос."},
+  {icon:"🧠",title:"Обучайте сотрудников",text:"85% инцидентов начинаются с человеческой ошибки. Тренинги важнее антивируса."},
+  {icon:"🔐",title:"Ограничьте права доступа",text:"Минимально необходимые привилегии. Не работайте под администратором постоянно."},
+  {icon:"📋",title:"Составьте план реагирования",text:"Знайте заранее, что делать при атаке: кого звонить, что отключать, как восстанавливаться."},
+];
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'glossary') renderGlossary();
+  if (id === 'threats') renderThreats();
+}
+
+/* ══════════════════════════════════════════
+   TAG HELPER
+══════════════════════════════════════════ */
+const catClass = {
+  'Атаки':'tag-danger','Вредоносное ПО':'tag-danger',
+  'Социальная инженерия':'tag-orange','Уязвимости':'tag-orange',
+  'Защита':'tag-green','Криптография':'tag-purple',
+  'Протоколы':'tag-accent','Разведка':'tag-accent'
+};
+
+/* ══════════════════════════════════════════
+   GLOSSARY
+══════════════════════════════════════════ */
+let activeLetter = '';
+
+function buildAlphabet() {
+  const row = document.getElementById('alphabetRow');
+  const letters = [...new Set(GLOSSARY.map(t => t.name[0].toUpperCase()))].sort();
+  const all = document.createElement('button');
+  all.textContent = 'Все'; all.className = 'active';
+  all.onclick = () => { activeLetter = ''; document.querySelectorAll('.alphabet button').forEach(b=>b.classList.remove('active')); all.classList.add('active'); renderGlossary(); };
+  row.appendChild(all);
+  letters.forEach(l => {
+    const b = document.createElement('button');
+    b.textContent = l;
+    b.onclick = () => {
+      activeLetter = l;
+      document.querySelectorAll('.alphabet button').forEach(b=>b.classList.remove('active'));
+      b.classList.add('active');
+      renderGlossary();
+    };
+    row.appendChild(b);
+  });
+}
+
+function renderGlossary() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const cat = document.getElementById('catFilter').value;
+  const sort = document.getElementById('sortFilter').value;
+  let list = GLOSSARY.filter(t => {
+    const matchQ = !q || t.name.toLowerCase().includes(q) || t.en.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q);
+    const matchCat = !cat || t.cat === cat;
+    const matchL = !activeLetter || t.name[0].toUpperCase() === activeLetter;
+    return matchQ && matchCat && matchL;
+  });
+  if (sort === 'az') list.sort((a,b) => a.name.localeCompare(b.name,'ru'));
+  else if (sort === 'za') list.sort((a,b) => b.name.localeCompare(a.name,'ru'));
+  else list.sort((a,b) => a.cat.localeCompare(b.cat,'ru') || a.name.localeCompare(b.name,'ru'));
+
+  const grid = document.getElementById('glossary-grid');
+  const count = document.getElementById('glossaryCount');
+  count.textContent = `Найдено: ${list.length} из ${GLOSSARY.length} терминов`;
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="no-results"><span class="icon">🔍</span>Ничего не найдено. Попробуйте изменить фильтры.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(t => termCard(t, q)).join('');
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<mark style="background:rgba(110,168,254,.3);color:#fff;border-radius:3px;padding:0 2px">$1</mark>');
+}
+
+function resetFilters() {
+  document.getElementById('search').value = '';
+  document.getElementById('catFilter').value = '';
+  document.getElementById('sortFilter').value = 'az';
+  activeLetter = '';
+  document.querySelectorAll('.alphabet button').forEach((b,i) => b.classList.toggle('active', i===0));
+  renderGlossary();
+}
+
+/* ══════════════════════════════════════════
+   THREATS PAGE
+══════════════════════════════════════════ */
+function renderThreats() {
+  const list = document.getElementById('threatList');
+  if (list.dataset.rendered) return;
+  list.dataset.rendered = '1';
+
+  list.innerHTML = THREATS.map((t,i) => `
+    <div class="threat-item">
+      <div class="threat-rank">#${i+1}</div>
+      <div class="threat-info">
+        <strong>${t.name}</strong>
+        <span>${t.desc}</span>
+      </div>
+      <div class="threat-bar-wrap">
+        <div style="font-size:.82rem;color:var(--accent-2);text-align:right;margin-bottom:4px">${t.pct}%</div>
+        <div class="threat-bar"><div class="threat-bar-fill" style="width:${t.pct*100/28}%"></div></div>
+      </div>
+    </div>
+  `).join('');
+
+  const tipsGrid = document.getElementById('tipsGrid');
+  tipsGrid.innerHTML = TIPS.map(tip => `
+    <div class="card pad" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="font-size:1.6rem;flex-shrink:0">${tip.icon}</div>
+      <div>
+        <h3 style="font-size:.97rem;margin-bottom:6px">${tip.title}</h3>
+        <p style="font-size:.88rem;color:var(--muted);margin:0;line-height:1.6">${tip.text}</p>
+      </div>
+    </div>
+  `).join('');
+
+  initChartThreats();
+}
+
+/* ══════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════ */
+const C = (hex,a) => hex + Math.round(a*255).toString(16).padStart(2,'0');
+
+function initCharts() {
+  // Doughnut — threat type distribution
+  new Chart(document.getElementById('chartDoughnut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Вредоносное ПО','Фишинг','DDoS','Уязвимости','APT','Прочее'],
+      datasets:[{
+        data:[34,26,15,12,8,5],
+        backgroundColor:['#ff7b7b','#6ea8fe','#7ee0c3','#c49fff','#ffb95a','#a8b3d6'],
+        borderWidth:0, hoverOffset:8
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true, cutout:'55%',
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{color:'#a8b3d6',padding:12,boxWidth:11,font:{size:11}}
+        }
+      }
+    }
+  });
+
+  // Bar — incidents by year
+  new Chart(document.getElementById('chartBar'), {
+    type:'bar',
+    data:{
+      labels:['2021','2022','2023','2024','2025','2026 (I пол.)'],
+      datasets:[{
+        label:'Число инцидентов (тыс.)',
+        data:[95,118,144,198,247,156],
+        backgroundColor: 'rgba(110,168,254,0.25)',
+        borderColor:'#6ea8fe',
+        borderWidth:2,
+        borderRadius:8,
+        hoverBackgroundColor:'rgba(110,168,254,0.45)',
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#a8b3d6'}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#a8b3d6'}},
+        y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#a8b3d6'}}
+      }
+    }
+  });
+
+  // Radar — attack vectors
+  new Chart(document.getElementById('chartRadar'), {
+    type:'radar',
+    data:{
+      labels:['Email','Web-уязвимости','Инсайдеры','IoT','Физический доступ','Облако','VPN/RDP'],
+      datasets:[{
+        label:'Частота вектора',
+        data:[88,74,55,42,28,65,70],
+        backgroundColor:'rgba(126,224,195,0.15)',
+        borderColor:'#7ee0c3',
+        pointBackgroundColor:'#7ee0c3',
+        borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#a8b3d6'}}},
+      scales:{r:{
+        grid:{color:'rgba(255,255,255,.12)'},
+        angleLines:{color:'rgba(255,255,255,.12)'},
+        ticks:{color:'#a8b3d6',backdropColor:'transparent',font:{size:10}},
+        pointLabels:{color:'#a8b3d6',font:{size:11}}
+      }}
+    }
+  });
+}
+
+function initChartThreats() {
+  new Chart(document.getElementById('chartThreats'), {
+    type:'bar',
+    data:{
+      labels: THREATS.map(t => t.name.length > 20 ? t.name.slice(0,18)+'…' : t.name),
+      datasets:[{
+        label:'Доля %',
+        data: THREATS.map(t => t.pct),
+        backgroundColor: ['#ff7b7b','#6ea8fe','#7ee0c3','#c49fff','#ffb95a','#a8b3d6','#ff9f7b','#78c8ff'],
+        borderRadius:8, borderWidth:0
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#a8b3d6',callback:v=>v+'%'}},
+        y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#a8b3d6',font:{size:11}}}
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   DETAILS — причины и защита для каждого термина
+══════════════════════════════════════════ */
+const DETAILS = {
+  // ── Атаки ──────────────────────────────
+  "DDoS-атака":[
+    {k:"cause",text:"Аренда ботнета стоит от $10/ч, а порог входа для атакующего крайне низок."},
+    {k:"cause",text:"IoT-устройства с заводскими паролями массово захватываются и используются как боты."},
+    {k:"tip",text:"Подключите CDN или специализированный anti-DDoS сервис: Cloudflare, Qrator, StormWall."},
+    {k:"tip",text:"Настройте rate limiting — ограничение числа запросов с одного IP в секунду."},
+    {k:"tip",text:"Распределите инфраструктуру по нескольким дата-центрам, устранив единую точку отказа."},
+    {k:"tip",text:"Составьте план реагирования: кто принимает решения и что изолируется в первую очередь."},
+  ],
+  "Брутфорс":[
+    {k:"cause",text:"Пользователи устанавливают короткие или словарные пароли, которые легко перебрать."},
+    {k:"cause",text:"Сервисы без ограничений на количество попыток входа позволяют миллионы запросов в час."},
+    {k:"tip",text:"Используйте пароли длиной от 14 символов с цифрами, буквами и спецсимволами."},
+    {k:"tip",text:"Включите блокировку аккаунта после 5–10 неудачных попыток входа."},
+    {k:"tip",text:"Добавьте задержку между попытками (captcha или экспоненциальный таймаут)."},
+    {k:"tip",text:"Активируйте двухфакторную аутентификацию — даже угаданный пароль не даст доступ."},
+  ],
+  "SQL-инъекция":[
+    {k:"cause",text:"Разработчики подставляют пользовательский ввод напрямую в SQL-запросы без санации."},
+    {k:"cause",text:"Устаревшие фреймворки и CMS часто содержат уязвимый код в готовых модулях."},
+    {k:"tip",text:"Используйте параметризованные запросы (prepared statements) — это основная защита."},
+    {k:"tip",text:"Применяйте ORM-библиотеки, которые автоматически экранируют ввод."},
+    {k:"tip",text:"Ограничьте права пользователя БД: аккаунт приложения не должен иметь DROP и ALTER."},
+    {k:"tip",text:"Настройте WAF для обнаружения и блокировки типичных SQL-инъекций на периметре."},
+  ],
+  "XSS":[
+    {k:"cause",text:"Сайт отображает пользовательский ввод в HTML без экранирования специальных символов."},
+    {k:"cause",text:"Разработчики доверяют данным из URL, кук и форм, не проверяя их перед выводом."},
+    {k:"tip",text:"Экранируйте все выводимые данные: < → &lt;, > → &gt;, \" → &quot;."},
+    {k:"tip",text:"Настройте Content Security Policy (CSP) — заголовок, запрещающий выполнение внешних скриптов."},
+    {k:"tip",text:"Используйте HttpOnly-флаг на cookies, чтобы JavaScript не мог их прочитать."},
+    {k:"tip",text:"Применяйте современные шаблонизаторы (React, Angular), которые экранируют вывод по умолчанию."},
+  ],
+  "MITM-атака":[
+    {k:"cause",text:"Незащищённые публичные Wi-Fi сети позволяют перехватить трафик без шифрования."},
+    {k:"cause",text:"HTTP (без S) передаёт данные открытым текстом, доступным любому в той же сети."},
+    {k:"tip",text:"Всегда используйте VPN при подключении к публичным или недоверенным сетям."},
+    {k:"tip",text:"Проверяйте наличие HTTPS и корректность сертификата перед вводом данных."},
+    {k:"tip",text:"Включите HSTS на своём сервере — браузер будет требовать только HTTPS-соединение."},
+    {k:"tip",text:"Не игнорируйте предупреждения браузера о недействительных SSL-сертификатах."},
+  ],
+  "Атака на цепочку поставок":[
+    {k:"cause",text:"Компании доверяют обновлениям от поставщиков без проверки их целостности."},
+    {k:"cause",text:"Злоумышленники компрометируют менее защищённого вендора, чтобы достичь тысячи его клиентов."},
+    {k:"tip",text:"Проверяйте цифровые подписи и хеши всех загружаемых пакетов и обновлений."},
+    {k:"tip",text:"Применяйте принцип наименьших привилегий для сторонних интеграций и зависимостей."},
+    {k:"tip",text:"Ведите реестр всех программных зависимостей (SBOM) и отслеживайте уязвимости в них."},
+    {k:"tip",text:"Изолируйте внешние компоненты в отдельных сегментах сети с ограниченным доступом."},
+  ],
+  "Атака нулевого дня":[
+    {k:"cause",text:"Между обнаружением уязвимости злоумышленниками и выпуском патча существует временной разрыв."},
+    {k:"cause",text:"Сложное ПО неизбежно содержит ошибки; 0-day — наиболее опасные из ещё не найденных."},
+    {k:"tip",text:"Применяйте глубокую защиту: WAF, EDR и сегментация сдерживают атаку даже без патча."},
+    {k:"tip",text:"Подпишитесь на threat intelligence-фиды для раннего предупреждения о новых 0-day."},
+    {k:"tip",text:"Используйте виртуальный патчинг (WAF-правила), пока официальное исправление не вышло."},
+    {k:"tip",text:"Минимизируйте поверхность атаки: отключите неиспользуемые сервисы и порты."},
+  ],
+  "Перехват сеанса":[
+    {k:"cause",text:"Session cookie передаётся по незашифрованному каналу и может быть перехвачена."},
+    {k:"cause",text:"Долгоживущие сессии без переиздания токена после аутентификации — лёгкая цель."},
+    {k:"tip",text:"Используйте только HTTPS и флаги Secure + HttpOnly + SameSite для cookies."},
+    {k:"tip",text:"Переиздавайте session token после каждого входа в систему (session fixation protection)."},
+    {k:"tip",text:"Привязывайте сессию к IP и User-Agent и завершайте её при смене параметров."},
+    {k:"tip",text:"Устанавливайте разумное время жизни сессии с автовыходом при неактивности."},
+  ],
+  "Clickjacking":[
+    {k:"cause",text:"Сайты по умолчанию позволяют встраивать себя в iframe на чужих страницах."},
+    {k:"cause",text:"Пользователь не видит прозрачный слой поверх кнопки и думает, что кликает на свой контент."},
+    {k:"tip",text:"Добавьте заголовок X-Frame-Options: DENY или SAMEORIGIN на сервере."},
+    {k:"tip",text:"Используйте Content-Security-Policy: frame-ancestors 'none' — современный стандарт."},
+    {k:"tip",text:"Добавьте JavaScript frame-busting как дополнительный уровень защиты."},
+    {k:"tip",text:"Используйте SameSite=Strict для cookies критичных операций."},
+  ],
+  "Атака повторного воспроизведения":[
+    {k:"cause",text:"Протоколы без одноразовых токенов позволяют повторно использовать перехваченные запросы."},
+    {k:"cause",text:"Отсутствие временных меток в запросах не даёт серверу определить устаревший запрос."},
+    {k:"tip",text:"Используйте одноразовые токены (nonce) в каждом критичном запросе."},
+    {k:"tip",text:"Добавляйте временные метки и отклоняйте запросы старше N секунд."},
+    {k:"tip",text:"Применяйте HMAC-подписи запросов — повторная отправка без ключа невозможна."},
+    {k:"tip",text:"TLS с включённым Perfect Forward Secrecy исключает расшифровку записанного трафика."},
+  ],
+  "Credential Stuffing":[
+    {k:"cause",text:"Миллиарды пар логин/пароль из утечек свободно доступны в даркнете."},
+    {k:"cause",text:"Большинство пользователей повторяют одинаковые пароли на разных сервисах."},
+    {k:"tip",text:"Используйте уникальный пароль для каждого сервиса — менеджер паролей поможет."},
+    {k:"tip",text:"Включите 2FA: даже правильный пароль не даст доступ без второго фактора."},
+    {k:"tip",text:"Настройте обнаружение аномальных массовых попыток входа и автоблокировку."},
+    {k:"tip",text:"Проверьте свой email на haveibeenpwned.com и смените пароли из утечек."},
+  ],
+  "DNS-спуфинг":[
+    {k:"cause",text:"DNS-серверы исторически не проверяли подлинность ответов от других серверов."},
+    {k:"cause",text:"Кэш DNS-сервера можно отравить, подменив запись до её истечения (TTL)."},
+    {k:"tip",text:"Включите DNSSEC — цифровая подпись записей исключает их подмену."},
+    {k:"tip",text:"Используйте зашифрованные DNS-протоколы: DNS over HTTPS (DoH) или DNS over TLS (DoT)."},
+    {k:"tip",text:"Проверяйте SSL-сертификат сайта — даже при подмене DNS сертификат выдаст подлог."},
+    {k:"tip",text:"Настройте мониторинг DNS-изменений для своих доменов."},
+  ],
+  "ARP-спуфинг":[
+    {k:"cause",text:"Протокол ARP не предусматривает аутентификации: любое устройство может заявить о своём MAC."},
+    {k:"cause",text:"В локальных сетях без коммутаторов с защитой ARP-таблицы легко отравляются."},
+    {k:"tip",text:"Используйте Dynamic ARP Inspection (DAI) на управляемых коммутаторах."},
+    {k:"tip",text:"Сегментируйте сеть — VLAN ограничивает зону действия ARP-атак."},
+    {k:"tip",text:"Применяйте статические ARP-записи для критичных устройств (серверы, шлюзы)."},
+    {k:"tip",text:"Шифруйте трафик через VPN или TLS — перехват бессмысленен без ключа расшифровки."},
+  ],
+  "CSRF":[
+    {k:"cause",text:"Браузер автоматически отправляет cookies при любом запросе к сайту, даже с чужой страницы."},
+    {k:"cause",text:"Сервер не проверяет, откуда пришёл запрос — от пользователя или со стороннего сайта."},
+    {k:"tip",text:"Используйте CSRF-токены: уникальное случайное значение в каждой форме на сервере."},
+    {k:"tip",text:"Установите SameSite=Strict или Lax для cookies — браузер не пошлёт их с чужого домена."},
+    {k:"tip",text:"Проверяйте заголовок Origin/Referer на сервере для критичных операций."},
+    {k:"tip",text:"Требуйте повторного ввода пароля или 2FA для особо чувствительных действий."},
+  ],
+  "Атака на основе словаря":[
+    {k:"cause",text:"Люди выбирают предсказуемые пароли: имена, даты, слова из словаря."},
+    {k:"cause",text:"Базы словарных атак содержат миллионы реальных паролей из прошлых утечек."},
+    {k:"tip",text:"Используйте парольные фразы из случайных слов — длина важнее сложности."},
+    {k:"tip",text:"Менеджер паролей генерирует и хранит случайные строки вместо вас."},
+    {k:"tip",text:"На сервере: храните пароли через bcrypt/Argon2 с солью, а не MD5/SHA1."},
+    {k:"tip",text:"Блокируйте или замедляйте вход после нескольких неудачных попыток."},
+  ],
+  // ── Вредоносное ПО ────────────────────
+  "Вирус":[
+    {k:"cause",text:"Вирусы распространяются через заражённые файлы, почту и съёмные носители."},
+    {k:"cause",text:"Устаревшее ПО с известными уязвимостями — основная точка заражения."},
+    {k:"tip",text:"Используйте актуальный антивирус с поведенческим анализом, а не только сигнатурами."},
+    {k:"tip",text:"Не запускайте вложения из писем без проверки, даже от «знакомых» отправителей."},
+    {k:"tip",text:"Регулярно обновляйте ОС и приложения — большинство вирусов эксплуатируют старые уязвимости."},
+    {k:"tip",text:"Отключите автозапуск со съёмных носителей в настройках ОС."},
+  ],
+  "Троян":[
+    {k:"cause",text:"Пользователи сами запускают трояна, принимая его за полезную программу или игру."},
+    {k:"cause",text:"Пиратское ПО и нелегальные «кряки» — наиболее частый источник троянов."},
+    {k:"tip",text:"Устанавливайте ПО только из официальных магазинов и проверенных источников."},
+    {k:"tip",text:"Проверяйте цифровую подпись установщика перед запуском."},
+    {k:"tip",text:"Используйте песочницу (sandbox) для запуска незнакомых программ в изолированной среде."},
+    {k:"tip",text:"EDR-решение обнаружит подозрительное поведение трояна даже без его сигнатуры."},
+  ],
+  "Червь":[
+    {k:"cause",text:"Черви используют сетевые уязвимости для автоматического распространения без действий пользователя."},
+    {k:"cause",text:"Плоские сети без сегментации позволяют червю заразить тысячи машин за минуты."},
+    {k:"tip",text:"Своевременно устанавливайте патчи — WannaCry остановил бы MS17-010, вышедший за 2 месяца до атаки."},
+    {k:"tip",text:"Сегментируйте сеть: заражение одного VLAN не должно распространяться на другие."},
+    {k:"tip",text:"Настройте брандмауэр на блокировку нетипичного горизонтального трафика внутри сети."},
+    {k:"tip",text:"IDS/IPS обнаружит аномальное сканирование портов, характерное для распространения червя."},
+  ],
+  "Вымогатель":[
+    {k:"cause",text:"Заражение происходит через фишинговые письма, уязвимые RDP-порты или вредоносные сайты."},
+    {k:"cause",text:"Высокая прибыльность: средний выкуп в 2024 году превысил $2 млн, что привлекает преступников."},
+    {k:"tip",text:"Делайте резервные копии по правилу 3-2-1 и храните одну копию офлайн, изолированно от сети."},
+    {k:"tip",text:"Закройте RDP-порт (3389) или переместите его за VPN — он главный вектор заражения."},
+    {k:"tip",text:"Настройте ограничение прав: пользователь не должен иметь возможность шифровать системные файлы."},
+    {k:"tip",text:"При заражении немедленно изолируйте машину от сети — это замедлит распространение."},
+  ],
+  "Шпионское ПО":[
+    {k:"cause",text:"Устанавливается незаметно через трояны, заражённые сайты или вредоносные расширения браузера."},
+    {k:"cause",text:"Пользователи не замечают шпионское ПО, так как оно не нарушает работу системы намеренно."},
+    {k:"tip",text:"Регулярно проверяйте список установленных программ и расширений браузера."},
+    {k:"tip",text:"Используйте антишпионское ПО и периодически запускайте полное сканирование."},
+    {k:"tip",text:"Не давайте приложениям излишние разрешения (микрофон, камера, контакты без нужды)."},
+    {k:"tip",text:"На корпоративных устройствах применяйте MDM для контроля установленного ПО."},
+  ],
+  "Ботнет":[
+    {k:"cause",text:"Устройства заражаются через уязвимости или слабые пароли и незаметно включаются в сеть."},
+    {k:"cause",text:"IoT-устройства редко обновляются и работают годами с заводскими паролями."},
+    {k:"tip",text:"Немедленно меняйте заводские пароли на всех роутерах, камерах и IoT-устройствах."},
+    {k:"tip",text:"Регулярно обновляйте прошивку роутера и IoT-устройств."},
+    {k:"tip",text:"Изолируйте IoT-устройства в отдельном VLAN без доступа к основной сети."},
+    {k:"tip",text:"Мониторьте исходящий трафик: ботнет-клиент часто генерирует нетипичные соединения."},
+  ],
+  "Руткит":[
+    {k:"cause",text:"Руткиты устанавливаются после первоначального взлома для сокрытия присутствия и создания бэкдора."},
+    {k:"cause",text:"Работают на уровне ядра ОС, поэтому стандартные антивирусы их не обнаруживают."},
+    {k:"tip",text:"Используйте специализированные инструменты: chkrootkit, rkhunter, GMER для обнаружения."},
+    {k:"tip",text:"Включите Secure Boot — он верифицирует цепочку загрузки и блокирует буткиты."},
+    {k:"tip",text:"При подозрении на руткит единственный надёжный метод — переустановка системы с нуля."},
+    {k:"tip",text:"Применяйте мониторинг целостности файлов (FIM) для обнаружения изменений в системных файлах."},
+  ],
+  "Рекламное ПО":[
+    {k:"cause",text:"Устанавливается в связке с бесплатным ПО через невнимательно принятые условия установщика."},
+    {k:"cause",text:"Вредоносные рекламные сети встраивают adware через уязвимости в браузере."},
+    {k:"tip",text:"Читайте каждый шаг установщика и отказывайтесь от дополнительных предложений."},
+    {k:"tip",text:"Устанавливайте расширения блокировки рекламы (uBlock Origin) в браузере."},
+    {k:"tip",text:"Периодически проверяйте список установленных программ и удаляйте незнакомые."},
+    {k:"tip",text:"Используйте антивирус с защитой браузера в реальном времени."},
+  ],
+  "Буткит":[
+    {k:"cause",text:"Заражает загрузчик ОС (MBR/UEFI), получая контроль до запуска любой защиты."},
+    {k:"cause",text:"Попадает в систему через вредоносные носители или после успешной атаки на систему."},
+    {k:"tip",text:"Включите Secure Boot в UEFI — он проверяет подпись загрузчика перед запуском."},
+    {k:"tip",text:"Используйте TPM для верификации целостности цепочки загрузки."},
+    {k:"tip",text:"Регулярно обновляйте прошивку UEFI — производители выпускают патчи от известных буткитов."},
+    {k:"tip",text:"При заражении потребуется полная переустановка с форматированием диска."},
+  ],
+  "Бэкдор":[
+    {k:"cause",text:"Устанавливается атакующим после взлома или внедряется в ПО на этапе разработки."},
+    {k:"cause",text:"Иногда оставляется намеренно производителями устройств для «технической поддержки»."},
+    {k:"tip",text:"Проводите регулярный аудит кода и зависимостей, особенно open-source компонентов."},
+    {k:"tip",text:"Мониторьте нетипичные сетевые соединения — бэкдор часто устанавливает связь с C2-сервером."},
+    {k:"tip",text:"Применяйте принцип наименьших привилегий: бэкдор не сможет навредить без прав."},
+    {k:"tip",text:"Используйте IDS/IPS для обнаружения C2-трафика по известным сигнатурам."},
+  ],
+  "Дроппер":[
+    {k:"cause",text:"Создаётся для обхода антивирусов: сам дроппер «чистый», а вредоносный код скачивается позже."},
+    {k:"cause",text:"Часто распространяется через фишинговые письма с документами Office/PDF."},
+    {k:"tip",text:"Блокируйте макросы в документах Office из интернета — основной канал доставки дропперов."},
+    {k:"tip",text:"Используйте песочницу для анализа вложений до их открытия пользователем."},
+    {k:"tip",text:"Настройте DNS-фильтрацию для блокировки обращений к C2-серверам."},
+    {k:"tip",text:"EDR обнаружит дроппер по поведению: запуск процессов, скачивание файлов, изменение реестра."},
+  ],
+  "Бесфайловое ВПО":[
+    {k:"cause",text:"Существует только в RAM и использует легитимные инструменты ОС, не оставляя файлов для антивируса."},
+    {k:"cause",text:"PowerShell, WMI и другие системные утилиты превращаются в оружие без установки стороннего ПО."},
+    {k:"tip",text:"Включите PowerShell Constrained Language Mode и Script Block Logging для аудита."},
+    {k:"tip",text:"Используйте EDR с поведенческим анализом — только он выявляет бесфайловые угрозы."},
+    {k:"tip",text:"Ограничьте использование PowerShell и WMI для рядовых пользователей через GPO."},
+    {k:"tip",text:"Настройте AMSI (Antimalware Scan Interface) для проверки скриптов перед выполнением."},
+  ],
+  // ── Социальная инженерия ──────────────
+  "Фишинг":[
+    {k:"cause",text:"Высокая окупаемость: одно письмо из тысячи даёт доступ к системе крупной компании."},
+    {k:"cause",text:"Люди действуют под давлением срочности и страха, не проверяя подлинность отправителя."},
+    {k:"tip",text:"Проверяйте реальный адрес отправителя — отображаемое имя легко подделать."},
+    {k:"tip",text:"Наведите курсор на ссылку перед кликом — URL покажет настоящий домен назначения."},
+    {k:"tip",text:"Используйте антифишинговые расширения браузера и почтовые фильтры."},
+    {k:"tip",text:"При малейшем сомнении позвоните отправителю напрямую, а не через контакты из письма."},
+  ],
+  "Спир-фишинг":[
+    {k:"cause",text:"Атакующий изучает жертву по LinkedIn, соцсетям и корпоративному сайту перед атакой."},
+    {k:"cause",text:"Персонализация делает письмо убедительным — оно содержит реальные детали о жертве."},
+    {k:"tip",text:"Ограничьте публичную информацию о сотрудниках в корпоративных и социальных сетях."},
+    {k:"tip",text:"Обучайте сотрудников распознавать нетипичные запросы даже от «руководителей»."},
+    {k:"tip",text:"Введите политику верификации финансовых переводов по отдельному каналу (звонок)."},
+    {k:"tip",text:"Технически: DMARC, SPF и DKIM блокируют письма, подделывающие ваш домен."},
+  ],
+  "Вишинг":[
+    {k:"cause",text:"IP-телефония позволяет подменить номер звонящего на любой, включая номер банка."},
+    {k:"cause",text:"Социальное давление при голосовом контакте сильнее, чем в переписке."},
+    {k:"tip",text:"Никогда не сообщайте CVV, ПИН, пароли и коды из SMS по телефону — банк не просит."},
+    {k:"tip",text:"Если сомневаетесь, повесьте трубку и перезвоните на официальный номер с сайта банка."},
+    {k:"tip",text:"Включите в банке уведомления: любая операция должна сопровождаться push-сообщением."},
+    {k:"tip",text:"Установите в банке кодовое слово для дополнительной верификации при обращении."},
+  ],
+  "Смишинг":[
+    {k:"cause",text:"SMS воспринимаются как более надёжный канал, чем email, что снижает бдительность."},
+    {k:"cause",text:"Ссылки в SMS сложнее проверить на мобильном устройстве."},
+    {k:"tip",text:"Не переходите по ссылкам из SMS — откройте нужный сайт вручную в браузере."},
+    {k:"tip",text:"Установите антивирус на смартфон с защитой от фишинговых URL."},
+    {k:"tip",text:"Сообщайте номера спам-звонков/SMS оператору — они блокируются на сетевом уровне."},
+    {k:"tip",text:"Никогда не вводите данные карты, перейдя по ссылке из SMS."},
+  ],
+  "Претекстинг":[
+    {k:"cause",text:"Люди склонны доверять «авторитетным» персонажам: IT-специалистам, аудиторам, юристам."},
+    {k:"cause",text:"Нет стандартного сценария, поэтому тренинги по типовым атакам не помогают."},
+    {k:"tip",text:"Внедрите политику верификации: любой запрос на доступ требует подтверждения через отдельный канал."},
+    {k:"tip",text:"Обучите сотрудников — нормальный IT-специалист никогда не просит пароль."},
+    {k:"tip",text:"Ведите журнал запросов на доступ и аномальных обращений в IT-поддержку."},
+    {k:"tip",text:"Ограничьте права: даже убедив сотрудника, злоумышленник не получит то, чего у того нет."},
+  ],
+  "Кво Про Кво":[
+    {k:"cause",text:"Принцип взаимности: люди склонны отвечать на услугу услугой, не задумываясь о рисках."},
+    {k:"cause",text:"Атакующий предлагает реальную помощь (ускорить ПК, починить принтер) для завоевания доверия."},
+    {k:"tip",text:"IT-помощь инициируется через официальную заявку в helpdesk, а не через входящие звонки."},
+    {k:"tip",text:"Никогда не предоставляйте удалённый доступ неожиданно позвонившему «IT-специалисту»."},
+    {k:"tip",text:"Используйте официальные утверждённые инструменты удалённого доступа с логированием."},
+    {k:"tip",text:"Проводите регулярные тренинги по социальной инженерии с симуляцией реальных сценариев."},
+  ],
+  "Тейлгейтинг":[
+    {k:"cause",text:"Вежливость и нежелание создавать неловкость заставляют людей пропускать чужих."},
+    {k:"cause",text:"Пропускные системы рассчитаны на технические угрозы, а не социальное давление."},
+    {k:"tip",text:"Обучите сотрудников: пропускать за собой незнакомца — нарушение политики безопасности."},
+    {k:"tip",text:"Установите шлюзы-турникеты, физически исключающие проход двух человек по одному пропуску."},
+    {k:"tip",text:"Введите культуру «уточни удостоверение» — это норма, а не грубость."},
+    {k:"tip",text:"Камеры и охрана у входа создают видимый сдерживающий эффект."},
+  ],
+  "Байтинг":[
+    {k:"cause",text:"Любопытство — мощный триггер: люди подбирают найденные носители и подключают их."},
+    {k:"cause",text:"Флешки с заражённым ПО автозапуска действуют мгновенно при подключении."},
+    {k:"tip",text:"Отключите автозапуск съёмных носителей во всей организации через групповую политику."},
+    {k:"tip",text:"Запретите использование личных USB-накопителей на рабочих устройствах."},
+    {k:"tip",text:"Проводите учения: подбрасывайте тестовые флешки и смотрите, кто подключает."},
+    {k:"tip",text:"Используйте USB-блокираторы (заглушки) для неиспользуемых портов на ПК."},
+  ],
+  // ── Защита ────────────────────────────
+  "Брандмауэр":[
+    {k:"cause",text:"Без фильтрации трафика любой порт, открытый на сервере, доступен всему интернету."},
+    {k:"cause",text:"Сетевые черви и сканеры активно ищут незащищённые порты — это автоматический процесс."},
+    {k:"tip",text:"Применяйте политику запрета по умолчанию: разрешено только явно разрешённое."},
+    {k:"tip",text:"Разделите правила для входящего и исходящего трафика — оба направления важны."},
+    {k:"tip",text:"Регулярно проводите аудит правил файрвола и удаляйте устаревшие разрешения."},
+    {k:"tip",text:"Для облачных ресурсов используйте Security Groups как программный брандмауэр."},
+  ],
+  "VPN":[
+    {k:"cause",text:"Публичные сети не шифруют трафик, делая его доступным для перехвата."},
+    {k:"cause",text:"Корпоративные ресурсы не должны быть доступны напрямую из интернета."},
+    {k:"tip",text:"Используйте VPN в любой публичной или недоверенной сети без исключений."},
+    {k:"tip",text:"Для корпоративного доступа выбирайте VPN с MFA и разграничением доступа по ролям."},
+    {k:"tip",text:"Предпочитайте протоколы WireGuard или OpenVPN — они актуальны и хорошо аудированы."},
+    {k:"tip",text:"Kill Switch: настройте полный разрыв интернета при отключении VPN."},
+  ],
+  "IDS/IPS":[
+    {k:"cause",text:"Брандмауэр контролирует доступ, но не анализирует содержимое разрешённого трафика."},
+    {k:"cause",text:"Атаки внутри периметра (lateral movement) незаметны без поведенческого мониторинга."},
+    {k:"tip",text:"Разместите IDS/IPS как на периметре, так и внутри сети для обнаружения бокового перемещения."},
+    {k:"tip",text:"Регулярно обновляйте сигнатуры угроз — устаревшие базы не обнаруживают новые атаки."},
+    {k:"tip",text:"Настройте оповещения на SIEM, а не только локальные алерты."},
+    {k:"tip",text:"Тюнингуйте правила, чтобы снизить количество ложных срабатываний и усталость аналитиков."},
+  ],
+  "Двухфакторная аутентификация":[
+    {k:"cause",text:"Пароли утекают через фишинг, брутфорс и компрометацию баз данных — это уже норма."},
+    {k:"cause",text:"Один фактор аутентификации — единственная линия обороны, которую легко преодолеть."},
+    {k:"tip",text:"Включите 2FA везде, где это возможно, приоритетно: email, банки, корпоративные системы."},
+    {k:"tip",text:"Предпочитайте TOTP-приложения (Google Authenticator, Authy) вместо SMS-кодов."},
+    {k:"tip",text:"Аппаратные ключи (YubiKey) — наиболее надёжный второй фактор, устойчивый к фишингу."},
+    {k:"tip",text:"Никогда не сообщайте 2FA-код никому — ни поддержке, ни «безопасникам»."},
+  ],
+  "SIEM":[
+    {k:"cause",text:"Логи от десятков систем невозможно анализировать вручную — корреляция нужна автоматически."},
+    {k:"cause",text:"Атаки растянуты во времени и видны только при сопоставлении событий из разных источников."},
+    {k:"tip",text:"Подключите все ключевые источники: AD, файрвол, почту, EDR, веб-прокси."},
+    {k:"tip",text:"Настройте правила корреляции для типичных сценариев атак (MITRE ATT&CK)."},
+    {k:"tip",text:"Установите базовые показатели нормального поведения для выявления отклонений."},
+    {k:"tip",text:"Регулярно проводите тестирование SIEM через red team или purple team упражнения."},
+  ],
+  "Принцип наименьших привилегий":[
+    {k:"cause",text:"Избыточные права превращают компрометацию одной учётной записи в катастрофу для всей сети."},
+    {k:"cause",text:"Исторически удобство ставится выше безопасности: «дам все права, чтобы точно работало»."},
+    {k:"tip",text:"Проведите ревизию прав доступа и отзовите всё, что не используется активно."},
+    {k:"tip",text:"Внедрите Role-Based Access Control (RBAC) — права по роли, а не по личному запросу."},
+    {k:"tip",text:"Для администраторов: отдельная учётная запись с правами, которую не используют для email."},
+    {k:"tip",text:"Периодически пересматривайте доступы при смене должности или увольнении сотрудника."},
+  ],
+  "Сегментация сети":[
+    {k:"cause",text:"Плоская сеть означает, что компрометация одного устройства даёт доступ ко всем остальным."},
+    {k:"cause",text:"Черви и ransomware стремительно распространяются в сетях без сегментации."},
+    {k:"tip",text:"Разбейте сеть на VLAN по функциям: офис, серверы, IoT, гости — отдельно."},
+    {k:"tip",text:"Контролируйте трафик между сегментами через межсетевой экран, а не только на периметре."},
+    {k:"tip",text:"Изолируйте критичные системы (АСУ ТП, ПД, финансы) в максимально закрытые сегменты."},
+    {k:"tip",text:"Тестируйте сегментацию: попытайтесь пробраться из гостевой сети в корпоративную."},
+  ],
+  "Патч-менеджмент":[
+    {k:"cause",text:"Большинство успешных атак используют уязвимости, для которых патч уже существует."},
+    {k:"cause",text:"Организации не знают, какое ПО установлено, и не могут своевременно его обновить."},
+    {k:"tip",text:"Ведите инвентаризацию всего ПО и ОС — нельзя обновить то, о чём не знаешь."},
+    {k:"tip",text:"Настройте автоматическое применение критических патчей в течение 24–72 часов."},
+    {k:"tip",text:"Приоритизируйте обновления по CVSS: сначала критические (≥9.0), затем высокие."},
+    {k:"tip",text:"Тестируйте патчи в staging-среде перед массовым развёртыванием в продакшн."},
+  ],
+  "Zero Trust":[
+    {k:"cause",text:"Периметровая безопасность устарела: пользователи, устройства и сервисы находятся везде."},
+    {k:"cause",text:"Внутренние угрозы и скомпрометированные аккаунты не останавливаются периметровым файрволом."},
+    {k:"tip",text:"Верифицируйте каждый запрос: кто запрашивает, с какого устройства, в какое время."},
+    {k:"tip",text:"Внедрите микросегментацию: каждое приложение изолировано, трафик между ними явно разрешён."},
+    {k:"tip",text:"Используйте MFA для всех пользователей без исключений, включая внутренних."},
+    {k:"tip",text:"Логируйте всё: Zero Trust без видимости — пустая декларация."},
+  ],
+  "Резервное копирование":[
+    {k:"cause",text:"Ransomware, аппаратные сбои и случайное удаление данных — три причины, почему бэкап обязателен."},
+    {k:"cause",text:"Компании узнают об отсутствии работающего бэкапа только в момент, когда он нужен."},
+    {k:"tip",text:"Следуйте правилу 3-2-1: три копии, два разных носителя, одна — вне офиса или офлайн."},
+    {k:"tip",text:"Регулярно тестируйте восстановление — не проверенный бэкап не является бэкапом."},
+    {k:"tip",text:"Храните как минимум одну копию изолированно от сети (air-gapped) — ransomware её не достанет."},
+    {k:"tip",text:"Определите RTO (время восстановления) и RPO (допустимая потеря данных) для каждой системы."},
+  ],
+  "Penetration Testing":[
+    {k:"cause",text:"Организации не знают своих реальных уязвимостей до тех пор, пока их не атакует злоумышленник."},
+    {k:"cause",text:"Сканеры уязвимостей находят известное, пентест выявляет цепочки атак, которые не видны иначе."},
+    {k:"tip",text:"Проводите пентест регулярно: минимум раз в год и после крупных изменений инфраструктуры."},
+    {k:"tip",text:"Используйте методологии PTES, OWASP или MITRE ATT&CK для системного подхода."},
+    {k:"tip",text:"Отрабатывайте выявленные уязвимости и проверяйте исправления повторным тестом."},
+    {k:"tip",text:"Рассмотрите bug bounty программу для непрерывного поиска уязвимостей внешними исследователями."},
+  ],
+  "WAF":[
+    {k:"cause",text:"Веб-приложения содержат пользовательский ввод, который сложно полностью безопасно обработать."},
+    {k:"cause",text:"Разработчики не могут мгновенно исправить все уязвимости — WAF даёт время на патч."},
+    {k:"tip",text:"Разместите WAF перед всеми публичными веб-приложениями, особенно с пользовательскими данными."},
+    {k:"tip",text:"Начните в режиме обнаружения (detection), тюнингуйте правила, затем переключайтесь на блокировку."},
+    {k:"tip",text:"WAF не заменяет безопасную разработку — используйте его как дополнительный слой защиты."},
+    {k:"tip",text:"Регулярно обновляйте наборы правил WAF для защиты от новых техник обхода."},
+  ],
+  "EDR":[
+    {k:"cause",text:"Традиционные антивирусы работают по сигнатурам и не видят новые и бесфайловые угрозы."},
+    {k:"cause",text:"Конечные устройства — основная точка входа для большинства атак."},
+    {k:"tip",text:"Разверните EDR на всех конечных устройствах: рабочих станциях, серверах, ноутбуках."},
+    {k:"tip",text:"Интегрируйте EDR с SIEM для централизованной корреляции событий."},
+    {k:"tip",text:"Настройте автоматическую изоляцию устройства при обнаружении критической угрозы."},
+    {k:"tip",text:"Регулярно просматривайте телеметрию EDR — аномалии выявляются при проактивном поиске угроз (threat hunting)."},
+  ],
+  "SOC":[
+    {k:"cause",text:"Одиночный администратор не может отслеживать тысячи событий безопасности в реальном времени."},
+    {k:"cause",text:"Атаки происходят круглосуточно, а реагирование требует дежурства 24/7."},
+    {k:"tip",text:"Если собственный SOC недоступен, рассмотрите MSSP (управляемый SOC от внешнего провайдера)."},
+    {k:"tip",text:"Разработайте и задокументируйте playbook-и для типовых инцидентов — это ускоряет реагирование."},
+    {k:"tip",text:"Определите чёткие метрики: MTTD (время до обнаружения) и MTTR (время до устранения)."},
+    {k:"tip",text:"Регулярно проводите учения по реагированию на инциденты (tabletop exercises)."},
+  ],
+  "SOAR":[
+    {k:"cause",text:"Аналитики SOC тратят часы на рутинные задачи, которые можно автоматизировать."},
+    {k:"cause",text:"Количество алертов превышает возможности ручного реагирования."},
+    {k:"tip",text:"Начните автоматизацию с простых и повторяющихся задач: обогащение IOC, блокировка IP."},
+    {k:"tip",text:"Интегрируйте SOAR с SIEM, EDR, тикет-системой и коммуникационными инструментами."},
+    {k:"tip",text:"Документируйте все плейбуки и регулярно обновляйте их по результатам реальных инцидентов."},
+    {k:"tip",text:"Измеряйте эффект: сколько человеко-часов сэкономлено, насколько снизился MTTR."},
+  ],
+  "Honeytoken":[
+    {k:"cause",text:"Злоумышленники, получив доступ, ищут ценные данные и неизбежно натыкаются на приманки."},
+    {k:"cause",text:"Обычные средства мониторинга не могут покрыть все возможные действия инсайдера или взломщика."},
+    {k:"tip",text:"Размещайте honeytokens в «интересных» местах: папка Passwords, таблица users в БД, AWS-ключи."},
+    {k:"tip",text:"Настройте немедленное оповещение при обращении к honeytoken — это 100% индикатор вторжения."},
+    {k:"tip",text:"Используйте разные типы: фиктивные учётки в AD, ложные API-ключи, «секретные» документы."},
+    {k:"tip",text:"Регулярно проверяйте, что honeytokens по-прежнему недоступны легитимным пользователям."},
+  ],
+  // ── Протоколы ─────────────────────────
+  "HTTPS":[
+    {k:"cause",text:"HTTP передаёт всё открытым текстом — логины, пароли, куки доступны перехватчику в той же сети."},
+    {k:"cause",text:"Без шифрования невозможно убедиться, что данные не были подменены в пути."},
+    {k:"tip",text:"Используйте HTTPS на всех страницах сайта без исключения — даже на «ненужных»."},
+    {k:"tip",text:"Включите HSTS (HTTP Strict Transport Security) для принудительного HTTPS в браузере."},
+    {k:"tip",text:"Настройте автоматическое перенаправление с HTTP на HTTPS (301 redirect)."},
+    {k:"tip",text:"Используйте бесплатные сертификаты Let's Encrypt и настройте их автообновление."},
+  ],
+  "TLS/SSL":[
+    {k:"cause",text:"Без транспортного шифрования данные в интернете передаются в открытом виде."},
+    {k:"cause",text:"SSL устарел и содержит критические уязвимости (POODLE, BEAST) — его нельзя использовать."},
+    {k:"tip",text:"Используйте только TLS 1.2 и 1.3 — старые версии отключите принудительно."},
+    {k:"tip",text:"Регулярно проверяйте конфигурацию TLS через ssllabs.com/ssltest."},
+    {k:"tip",text:"Включите Perfect Forward Secrecy (PFS) — прошлый трафик нельзя расшифровать при компрометации ключа."},
+    {k:"tip",text:"Следите за сроком действия сертификата и настройте автообновление."},
+  ],
+  "SSH":[
+    {k:"cause",text:"Telnet и FTP передают данные открытым текстом — SSH создан как их безопасная замена."},
+    {k:"cause",text:"Открытый SSH-порт на стандартном порту 22 сканируется ботами в течение минут после публикации."},
+    {k:"tip",text:"Используйте аутентификацию по ключу (RSA/Ed25519) вместо пароля — пароли ненадёжны."},
+    {k:"tip",text:"Переместите SSH на нестандартный порт — уменьшит шум от автоматических сканеров."},
+    {k:"tip",text:"Запретите вход под root напрямую: PermitRootLogin no в sshd_config."},
+    {k:"tip",text:"Настройте fail2ban для автоматической блокировки IP после N неудачных попыток."},
+  ],
+  "OAuth 2.0":[
+    {k:"cause",text:"Раньше сайты запрашивали логин/пароль от сторонних сервисов напрямую — это небезопасно."},
+    {k:"cause",text:"OAuth разработан, чтобы приложение получало доступ, не зная вашего пароля."},
+    {k:"tip",text:"Всегда проверяйте state-параметр в OAuth для защиты от CSRF при авторизации."},
+    {k:"tip",text:"Используйте минимально необходимые scopes — не запрашивайте доступ, который не нужен."},
+    {k:"tip",text:"Храните access и refresh токены безопасно — не в localStorage (уязвим для XSS)."},
+    {k:"tip",text:"Реализуйте PKCE для публичных клиентов (мобильные приложения, SPA)."},
+  ],
+  "DNS":[
+    {k:"cause",text:"DNS создан в 1983 году без механизмов аутентификации — безопасность не была приоритетом."},
+    {k:"cause",text:"Большинство DNS-трафика передаётся в открытом виде — провайдер видит все запросы."},
+    {k:"tip",text:"Используйте DoH или DoT для шифрования DNS-запросов."},
+    {k:"tip",text:"Внедрите DNSSEC для верификации подлинности ответов."},
+    {k:"tip",text:"Настройте DNS-фильтрацию для блокировки вредоносных доменов (C2, фишинг)."},
+    {k:"tip",text:"Мониторьте DNS-запросы — туннелирование данных через DNS — распространённая техника утечки."},
+  ],
+  "DNSSEC":[
+    {k:"cause",text:"DNS без подписи позволяет подменить ответ сервера без обнаружения клиентом."},
+    {k:"cause",text:"DNS cache poisoning — классическая атака, которую DNSSEC полностью нейтрализует."},
+    {k:"tip",text:"Включите DNSSEC для всех ваших доменов у регистратора."},
+    {k:"tip",text:"Используйте резолверы с проверкой DNSSEC: Cloudflare 1.1.1.1 или Google 8.8.8.8."},
+    {k:"tip",text:"Следите за сроком действия ключей DNSSEC — истекший ключ сделает домен недоступным."},
+    {k:"tip",text:"Комбинируйте с DNS over HTTPS для комплексной защиты DNS-трафика."},
+  ],
+  "IPsec":[
+    {k:"cause",text:"IP-пакеты по умолчанию не шифруются и не аутентифицируются на сетевом уровне."},
+    {k:"cause",text:"Корпоративным сетям нужно шифровать трафик между офисами без прикладного уровня."},
+    {k:"tip",text:"Используйте режим Tunnel для защиты соединений «сеть-сеть» между офисами."},
+    {k:"tip",text:"Предпочитайте IKEv2 для согласования ключей — он быстрее и безопаснее IKEv1."},
+    {k:"tip",text:"Регулярно меняйте pre-shared keys или используйте сертификаты для аутентификации."},
+    {k:"tip",text:"Мониторьте состояние туннелей — сбой IPsec может незаметно оставить трафик незашифрованным."},
+  ],
+  "LDAP":[
+    {k:"cause",text:"Протокол по умолчанию не шифрует трафик — учётные данные передаются открытым текстом."},
+    {k:"cause",text:"Ввод пользователя в LDAP-запросы без санации приводит к LDAP-инъекциям."},
+    {k:"tip",text:"Используйте только LDAPS (LDAP over TLS) или StartTLS — никогда чистый LDAP."},
+    {k:"tip",text:"Используйте параметризованные LDAP-запросы для предотвращения инъекций."},
+    {k:"tip",text:"Ограничьте учётные записи, использующие LDAP, минимально необходимыми правами."},
+    {k:"tip",text:"Включите аудит LDAP-запросов для обнаружения аномальных обращений к каталогу."},
+  ],
+  // ── Уязвимости ────────────────────────
+  "Переполнение буфера":[
+    {k:"cause",text:"Программа не проверяет размер входных данных перед записью в буфер фиксированного размера."},
+    {k:"cause",text:"Языки C и C++ не проверяют границы массивов автоматически в отличие от Java или Python."},
+    {k:"tip",text:"Используйте безопасные функции: strncpy вместо strcpy, snprintf вместо sprintf."},
+    {k:"tip",text:"Включите защиту компилятора: Stack Canaries, ASLR, DEP/NX."},
+    {k:"tip",text:"Применяйте статический анализ кода (SAST) для автоматического поиска небезопасных функций."},
+    {k:"tip",text:"Перейдите на языки с автоматическим управлением памятью (Rust, Go) для новых проектов."},
+  ],
+  "CVE":[
+    {k:"cause",text:"ПО содержит ошибки; CVE — стандартизированный способ их отслеживания и оповещения."},
+    {k:"cause",text:"Без единого реестра организации не знали бы, уязвимы ли их системы к известным угрозам."},
+    {k:"tip",text:"Подпишитесь на CVE-уведомления для используемого ПО через NIST NVD или vendor-бюллетени."},
+    {k:"tip",text:"Используйте SCA-инструменты (Dependabot, Snyk) для автоматического обнаружения CVE в зависимостях."},
+    {k:"tip",text:"Приоритизируйте устранение CVE по CVSS Score и наличию публичного эксплойта."},
+    {k:"tip",text:"Ведите SBOM (Software Bill of Materials) — список всех компонентов для быстрой оценки воздействия."},
+  ],
+  "CVSS":[
+    {k:"cause",text:"До CVSS организации не имели единого стандарта для приоритизации исправления уязвимостей."},
+    {k:"cause",text:"CVSS v3.1 учитывает вектор атаки, сложность, привилегии и влияние на CIA-триаду."},
+    {k:"tip",text:"Критические (≥9.0) и высокие (7.0–8.9) уязвимости устраняйте в первую очередь."},
+    {k:"tip",text:"Учитывайте контекст: уязвимость в изолированной системе менее опасна, чем в интернете."},
+    {k:"tip",text:"Используйте EPSS (Exploit Prediction Scoring System) вместе с CVSS для лучшей приоритизации."},
+    {k:"tip",text:"Не игнорируйте средние уязвимости (4.0–6.9) — в цепочке они могут стать критичными."},
+  ],
+  "Race Condition":[
+    {k:"cause",text:"Многопоточный код работает с общими ресурсами без должной синхронизации."},
+    {k:"cause",text:"Временной интервал между проверкой и использованием (TOCTOU) позволяет вмешаться."},
+    {k:"tip",text:"Используйте атомарные операции и мьютексы для защиты разделяемых ресурсов."},
+    {k:"tip",text:"Реализуйте транзакции в БД с изоляцией для финансовых и других критичных операций."},
+    {k:"tip",text:"Применяйте инструменты статического и динамического анализа: ThreadSanitizer, Helgrind."},
+    {k:"tip",text:"Минимизируйте время между check и use — чем короче окно, тем сложнее эксплуатация."},
+  ],
+  "Path Traversal":[
+    {k:"cause",text:"Приложение использует пользовательский ввод для построения пути к файлу без санации."},
+    {k:"cause",text:"Последовательность ../ позволяет выйти за пределы разрешённой директории."},
+    {k:"tip",text:"Нормализуйте путь (realpath/canonical path) и проверяйте, что он начинается с разрешённой базы."},
+    {k:"tip",text:"Никогда не используйте пользовательский ввод напрямую для формирования файловых путей."},
+    {k:"tip",text:"Запустите веб-сервер с минимальными правами — он не должен читать системные файлы."},
+    {k:"tip",text:"Используйте chroot или контейнеры для изоляции файловой системы веб-приложения."},
+  ],
+  "SSRF":[
+    {k:"cause",text:"Сервер выполняет HTTP-запросы по URL, указанному пользователем, без валидации назначения."},
+    {k:"cause",text:"Внутренние сервисы и метаданные облака (169.254.169.254) доступны только с сервера."},
+    {k:"tip",text:"Проверяйте и ограничивайте допустимые URL через whitelist доменов и IP."},
+    {k:"tip",text:"Блокируйте запросы к приватным IP-диапазонам: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16."},
+    {k:"tip",text:"В облаке используйте IMDSv2 с токенами вместо IMDSv1 для защиты метаданных инстанса."},
+    {k:"tip",text:"Изолируйте сервисы, выполняющие внешние запросы, в отдельный сегмент сети."},
+  ],
+  "IDOR":[
+    {k:"cause",text:"Разработчики контролируют доступ только на уровне аутентификации, забывая об авторизации."},
+    {k:"cause",text:"Предсказуемые идентификаторы (числа, UUID) легко перебирать для доступа к чужим данным."},
+    {k:"tip",text:"Для каждого запроса проверяйте: имеет ли текущий пользователь право на этот объект."},
+    {k:"tip",text:"Используйте непредсказуемые UUID вместо последовательных числовых ID."},
+    {k:"tip",text:"Внедрите тесты авторизации в автоматизированное тестирование (OWASP ASVS Level 2+)."},
+    {k:"tip",text:"Проводите пентест с фокусом на broken access control — это самая распространённая уязвимость (OWASP Top 1)."},
+  ],
+  "Десериализация":[
+    {k:"cause",text:"Приложение десериализует данные от пользователя, доверяя их целостности и типу."},
+    {k:"cause",text:"Вредоносный сериализованный объект может вызвать выполнение произвольного кода при десериализации."},
+    {k:"tip",text:"Никогда не десериализуйте данные из недоверенных источников без проверки."},
+    {k:"tip",text:"Используйте безопасные форматы: JSON с явной схемой вместо нативной сериализации Java/PHP."},
+    {k:"tip",text:"Подписывайте сериализованные данные HMAC — проверяйте подпись до десериализации."},
+    {k:"tip",text:"Запустите десериализацию в изолированной среде с минимальными правами."},
+  ],
+  // ── Криптография ──────────────────────
+  "Шифрование":[
+    {k:"cause",text:"Данные в покое и в движении уязвимы для перехвата без шифрования."},
+    {k:"cause",text:"Утечка незашифрованной базы данных мгновенно компрометирует все данные пользователей."},
+    {k:"tip",text:"Шифруйте данные в покое: включите BitLocker (Windows) или FileVault (macOS) на всех устройствах."},
+    {k:"tip",text:"Используйте только актуальные алгоритмы: AES-256, ChaCha20 — избегайте DES, 3DES, RC4."},
+    {k:"tip",text:"Управляйте ключами в HSM или KMS — потеря ключа означает потерю данных."},
+    {k:"tip",text:"Шифруйте резервные копии — неподписанный бэкап на облаке так же опасен, как открытые данные."},
+  ],
+  "Хеш-функция":[
+    {k:"cause",text:"Хранение паролей в открытом виде — прямая угроза при утечке базы данных."},
+    {k:"cause",text:"Слабые хеши (MD5, SHA1) давно взломаны и не подходят для паролей."},
+    {k:"tip",text:"Для паролей используйте только bcrypt, scrypt или Argon2 — они медленные намеренно."},
+    {k:"tip",text:"Всегда добавляйте соль (salt) перед хешированием для защиты от радужных таблиц."},
+    {k:"tip",text:"MD5 и SHA1 допустимы только для проверки целостности файлов, но не для паролей."},
+    {k:"tip",text:"Увеличивайте cost factor (rounds) по мере роста производительности железа."},
+  ],
+  "Цифровая подпись":[
+    {k:"cause",text:"Без подписи невозможно доказать, что данные не были изменены после отправки."},
+    {k:"cause",text:"Подписи обеспечивают неотказуемость: отправитель не может отрицать факт отправки."},
+    {k:"tip",text:"Подписывайте все публикуемые программные пакеты для проверки их целостности пользователями."},
+    {k:"tip",text:"Используйте ED25519 или RSA-4096 — более слабые ключи (RSA-1024) считаются небезопасными."},
+    {k:"tip",text:"Храните закрытый ключ подписи в HSM или аппаратном токене."},
+    {k:"tip",text:"Проверяйте подписи при установке ПО — это защищает от атак на цепочку поставок."},
+  ],
+  "PKI":[
+    {k:"cause",text:"Без доверенной инфраструктуры невозможно верифицировать подлинность публичного ключа."},
+    {k:"cause",text:"PKI создаёт иерархию доверия: корневой CA → промежуточный CA → конечный сертификат."},
+    {k:"tip",text:"Используйте сертификаты только от доверенных публичных CA или внутреннего корпоративного CA."},
+    {k:"tip",text:"Следите за сроком действия сертификатов и настройте автообновление (Let's Encrypt / ACME)."},
+    {k:"tip",text:"Включите Certificate Transparency Log для обнаружения несанкционированных сертификатов вашего домена."},
+    {k:"tip",text:"Немедленно отзывайте (revoke) сертификаты при компрометации закрытого ключа."},
+  ],
+  "Соль (Salt)":[
+    {k:"cause",text:"Без соли два пользователя с одинаковым паролем имеют одинаковый хеш — уязвимость к rainbow tables."},
+    {k:"cause",text:"Хакеры используют заранее вычисленные таблицы хешей для мгновенной «расшифровки» паролей."},
+    {k:"tip",text:"Используйте криптографически случайную соль длиной минимум 16 байт для каждого пользователя."},
+    {k:"tip",text:"Храните соль вместе с хешем — она не секретна, но должна быть уникальна."},
+    {k:"tip",text:"Современные алгоритмы (bcrypt, Argon2) добавляют соль автоматически — используйте их."},
+    {k:"tip",text:"При миграции на более сильное хеширование обновляйте хеши при следующем входе пользователя."},
+  ],
+  "End-to-End Encryption":[
+    {k:"cause",text:"Без E2EE провайдер видит все сообщения и может передать их третьим лицам по запросу."},
+    {k:"cause",text:"Централизованное хранение незашифрованных сообщений — привлекательная цель для взлома."},
+    {k:"tip",text:"Используйте мессенджеры с E2EE по умолчанию: Signal, WhatsApp, iMessage."},
+    {k:"tip",text:"Для email используйте PGP/GPG или S/MIME — стандартный email не шифруется."},
+    {k:"tip",text:"Убедитесь, что E2EE включён: некоторые приложения не шифруют резервные копии сообщений."},
+    {k:"tip",text:"Верифицируйте ключи собеседника через Safety Numbers (Signal) для защиты от MITM."},
+  ],
+  "Квантовая криптография":[
+    {k:"cause",text:"Квантовые компьютеры угрожают RSA и ECC: алгоритм Шора разломает их за разумное время."},
+    {k:"cause",text:"Злоумышленники уже сохраняют зашифрованный трафик для будущей расшифровки квантовыми ПК (harvest now, decrypt later)."},
+    {k:"tip",text:"Следите за стандартами NIST PQC (Post-Quantum Cryptography) и готовьтесь к миграции."},
+    {k:"tip",text:"Начните криптографический аудит: определите, где используется RSA/ECC для планирования замены."},
+    {k:"tip",text:"Гибридный подход — комбинация классических и постквантовых алгоритмов — уже доступен."},
+    {k:"tip",text:"Увеличьте размеры симметричных ключей до 256 бит — они устойчивы к квантовым атакам."},
+  ],
+  "Асимметричное шифрование":[
+    {k:"cause",text:"Симметричное шифрование требует безопасной передачи ключа — асимметричное решает эту проблему."},
+    {k:"cause",text:"Публичный ключ можно публиковать открыто; расшифровать может только владелец приватного ключа."},
+    {k:"tip",text:"Используйте RSA-4096 или Ed25519 — более короткие ключи (RSA-1024) небезопасны."},
+    {k:"tip",text:"Никогда не публикуйте и не передавайте приватный ключ — это равносильно раскрытию пароля."},
+    {k:"tip",text:"Храните приватные ключи в HSM или аппаратном токене, а не в файлах на диске."},
+    {k:"tip",text:"Ротируйте ключевые пары регулярно и при любом подозрении на компрометацию."},
+  ],
+  // ── Разведка ──────────────────────────
+  "OSINT":[
+    {k:"cause",text:"Люди и компании добровольно публикуют огромное количество информации в открытых источниках."},
+    {k:"cause",text:"Злоумышленники тратят 80% времени на разведку — это бесплатно и практически незаметно."},
+    {k:"tip",text:"Проведите OSINT-аудит своей организации: что находит злоумышленник через поиск."},
+    {k:"tip",text:"Ограничьте публикацию организационной схемы, emails сотрудников и технической документации."},
+    {k:"tip",text:"Настройте Google Alerts на название компании для мониторинга публичных упоминаний."},
+    {k:"tip",text:"Регулярно проверяйте, что попало в утечки данных через haveibeenpwned и аналоги."},
+  ],
+  "Footprinting":[
+    {k:"cause",text:"Первый этап любой атаки: без карты цели невозможно спланировать эффективный взлом."},
+    {k:"cause",text:"Публичные DNS-записи, WHOIS и сканеры раскрывают инфраструктуру без прямого взаимодействия."},
+    {k:"tip",text:"Используйте privacy protection для WHOIS-записей доменов — скройте личные данные."},
+    {k:"tip",text:"Закройте все неиспользуемые порты и сервисы — не давайте карты для разведки."},
+    {k:"tip",text:"Настройте honeypot: атакующий, собирающий разведку, может попасть на приманку."},
+    {k:"tip",text:"Периодически сами сканируйте свой периметр инструментами типа Shodan, Censys для оценки видимости."},
+  ],
+  "Honeypot":[
+    {k:"cause",text:"Реальные системы не позволяют изучать тактики атакующих без риска для боевых данных."},
+    {k:"cause",text:"Honeypot превращает атаку в возможность: злоумышленник атакует ложную цель и раскрывает методы."},
+    {k:"tip",text:"Разместите honeypot в изолированном сегменте — взаимодействие с ним всегда аномалия."},
+    {k:"tip",text:"Собирайте и анализируйте TTPs (тактики, техники и процедуры) атакующих для улучшения защиты."},
+    {k:"tip",text:"Используйте honeypot для раннего обнаружения внутренних угроз — инсайдер не должен туда ходить."},
+    {k:"tip",text:"Открытые решения: OpenCanary, T-Pot — простой способ начать без больших инвестиций."},
+  ],
+  "Threat Intelligence":[
+    {k:"cause",text:"Без данных о реальных угрозах защита строится на предположениях, а не на фактах."},
+    {k:"cause",text:"APT-группы используют одни и те же IOC и TTPs — TI позволяет применить знания сообщества."},
+    {k:"tip",text:"Подпишитесь на бесплатные TI-фиды: AlienVault OTX, MISP, Abuse.ch, FS-ISAC."},
+    {k:"tip",text:"Интегрируйте TI-фиды в SIEM и файрвол для автоматической блокировки известных IOC."},
+    {k:"tip",text:"Используйте MITRE ATT&CK Framework для систематизации угроз и оценки покрытия защиты."},
+    {k:"tip",text:"Участвуйте в отраслевых ISAC — отрасль делится данными об угрозах в режиме реального времени."},
+  ],
+  "APT":[
+    {k:"cause",text:"Государства и организованные группировки финансируют атаки для шпионажа, саботажа или наживы."},
+    {k:"cause",text:"APT терпеливы: могут месяцами оставаться в сети незамеченными, собирая данные."},
+    {k:"tip",text:"Threat hunting: активно ищите признаки присутствия APT, а не ждите автоматических алертов."},
+    {k:"tip",text:"Сегментация и наименьшие привилегии ограничивают lateral movement даже при успешном взломе."},
+    {k:"tip",text:"Мониторьте необычную активность в нерабочее время — APT часто действуют ночью."},
+    {k:"tip",text:"Для критичных систем рассмотрите air-gap изоляцию — физическое отключение от интернета."},
+  ],
+  "IOC":[
+    {k:"cause",text:"После инцидента организации не знают, что искать в логах для подтверждения факта атаки."},
+    {k:"cause",text:"IOC — артефакты атаки: хеши, IP, домены, строки реестра — помогают найти и подтвердить компрометацию."},
+    {k:"tip",text:"Интегрируйте IOC-фиды в SIEM для автоматического обнаружения известных угроз."},
+    {k:"tip",text:"Проверяйте хеши загружаемых файлов через VirusTotal перед запуском в корпоративной среде."},
+    {k:"tip",text:"IOC быстро устаревают — устанавливайте TTL и удаляйте старые данные из фидов."},
+    {k:"tip",text:"Переходите от IOC к TTP (тактики/техники): TTPs меняются медленнее, чем конкретные IP и хеши."},
+  ],
+  "Shodan":[
+    {k:"cause",text:"Shodan индексирует все публично доступные устройства — злоумышленник видит вашу инфраструктуру без взлома."},
+    {k:"cause",text:"Организации не знают, какие их ресурсы видны из интернета, — Shodan знает."},
+    {k:"tip",text:"Найдите свою организацию в Shodan — это покажет вам то, что видит злоумышленник."},
+    {k:"tip",text:"Закройте все неиспользуемые порты и сервисы — они не должны появляться в Shodan."},
+    {k:"tip",text:"Настройте алерты в Shodan Monitor для уведомлений о новых открытых портах вашей сети."},
+    {k:"tip",text:"Никогда не оставляйте управляющие интерфейсы (RDP, SSH, панели управления) открытыми в интернет."},
+  ],
+  "Цифровые следы":[
+    {k:"cause",text:"Каждое действие в интернете оставляет данные: cookies, IP, metadata фотографий, история поиска."},
+    {k:"cause",text:"Агрегация казалось бы безобидных данных позволяет построить детальный профиль человека."},
+    {k:"tip",text:"Используйте браузер в режиме инкогнито и Privacy Badger/uBlock Origin для блокировки трекеров."},
+    {k:"tip",text:"Удаляйте метаданные (EXIF) из фотографий перед публикацией — они содержат геолокацию."},
+    {k:"tip",text:"Используйте разные email-адреса для разных сервисов — это усложняет агрегацию данных."},
+    {k:"tip",text:"Регулярно делайте OSINT на себя и удаляйте лишние данные из открытых источников."},
+  ],
+};
+
+/* ══════════════════════════════════════════
+   TOGGLE TERM EXPAND
+══════════════════════════════════════════ */
+function toggleTerm(el) {
+  const isOpen = el.classList.contains('open');
+  el.classList.toggle('open', !isOpen);
+  const toggleText = el.querySelector('.term-toggle-label');
+  if (toggleText) toggleText.textContent = isOpen ? 'Подробнее' : 'Свернуть';
+}
+
+/* ══════════════════════════════════════════
+   TERM CARD BUILDER
+══════════════════════════════════════════ */
+function termCard(t, q = '') {
+  const details = DETAILS[t.name] || [];
+  const detailsHTML = details.length ? `
+    <div class="term-details">
+      <ul class="term-detail-list">
+        ${details.map(d => `
+          <li class="${d.k}">
+            <span class="di">${d.k === 'cause' ? '🔍' : '🛡️'}</span>
+            <span class="dt">${d.text}</span>
+          </li>`).join('')}
+      </ul>
+    </div>
+    <div class="term-toggle" onclick="event.stopPropagation()">
+      <span class="term-toggle-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="term-toggle-label">Подробнее</span>
+    </div>` : '';
+
+  return `
+    <div class="term" onclick="toggleTerm(this)">
+      <div class="term-head">
+        <h3>${highlight(t.name, q)}</h3>
+        <span class="tag ${catClass[t.cat]||'tag-accent'}">${t.cat}</span>
+      </div>
+      <div class="term-en">${t.en}</div>
+      <p>${highlight(t.desc, q)}</p>
+      ${t.example ? `<div class="term-example">💡 ${t.example}</div>` : ''}
+      ${detailsHTML}
+    </div>`;
+}
+
+/* ══════════════════════════════════════════
+   HOME — POPULAR TERMS
+══════════════════════════════════════════ */
+function renderHomeTerms() {
+  const picks = ['Фишинг','Вымогатель','DDoS-атака','Zero Trust','SQL-инъекция','OSINT','Двухфакторная аутентификация','Атака нулевого дня'];
+  const grid = document.getElementById('home-terms');
+  grid.innerHTML = picks.map(name => {
+    const t = GLOSSARY.find(g => g.name === name);
+    return t ? termCard(t) : '';
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+buildAlphabet();
+initCharts();
+renderHomeTerms();
+</script>
+</body>
+</html>
